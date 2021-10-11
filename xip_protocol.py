@@ -3,10 +3,10 @@
 Create .protocol file for Presrevica ingest
 """
 
-# -c use path wiht no slash
+# -c use path to dir of files
 #python3 xip_protocol.py -c ./sips/test_file/
 
-__author__ = "Your Name"
+__author__ = "David Cirella"
 __version__ = "0.1.0"
 __license__ = "MIT"
 
@@ -174,6 +174,7 @@ def create_xip(content_path):
             ##
             # Generation
             gen =  et.Element('Generation')
+            gen.attrib  = {'original' : "true", 'active' : "true"}
             xip_root.append(gen) 
             
             #co

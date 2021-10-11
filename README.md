@@ -4,6 +4,12 @@
 
 
 
+`-c use path to dir of files `
+
+`python3 xip_protocol.py -c ./sips/test_file/`
+
+
+
 
 
 ### Requirements
