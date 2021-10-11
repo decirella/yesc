@@ -17,6 +17,7 @@ import uuid
 import datetime
 import xml.etree.ElementTree as et
 from xml.dom import minidom
+from lxml import etree
 
 
 localAIPstr = ''
@@ -79,7 +80,7 @@ def create_protocol(content_path):
 def create_xip(content_path):
     
     xip_root = et.Element('XIP')
-    xip_root.attrib = {'xmlns':"http://preservica.com/XIP/v6.2"}
+    xip_root.attrib = {'xmlns':"http://preservica.com/XIP/v6.3"}
     
     # TODO create SO if need
     
@@ -238,7 +239,8 @@ def create_xip(content_path):
     
     os.mkdir(sips_out_path + localAIPstr)
     xip_out_path = sips_out_path + localAIPstr + '/metadata.xml'  
-    write_out(xip_root, xip_out_path) 
+    write_out(xip_root, xip_out_path)
+    print(validate_xml(xip_out_path, './XIP-V6.xsd')) 
     
 
 def get_checksum(bs_file, algo):
@@ -258,8 +260,19 @@ def write_out(xml_root, file_path):
     print(xml_out)
     xml_file = open(file_path, "w")
     xml_file.write(xml_out)
-    
+
     return 0
+    
+def validate_xml(xml_path: str, xsd_path: str) -> bool:
+
+    xmlschema_doc = etree.parse(xsd_path)
+    xmlschema = etree.XMLSchema(xmlschema_doc)
+
+    xml_doc = etree.parse(xml_path)
+
+    xml_status = xmlschema.validate(xml_doc)
+    return xml_status
+
     
 def data_stats(data_path):
     print(data_path)
@@ -273,9 +286,6 @@ def data_stats(data_path):
     data_size = 0
     for f in file_list:
         data_size += os.path.getsize(data_path + f)
-        
-    
-    
     
     return file_count, data_size
     
