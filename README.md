@@ -10,13 +10,15 @@
 
 
 
+Basic implementation of packager for single files
+
 
 
 ### Requirements
 
-[requirements.txt](/requirements.txt)
+
 
 
 #### Contact:
 David Cirella  
-[github.com/decirella](https://github.com/decirella)
+
