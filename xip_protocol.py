@@ -80,7 +80,7 @@ def create_protocol(content_path):
 def create_xip(content_path):
     
     xip_root = et.Element('XIP')
-    xip_root.attrib = {'xmlns':"http://preservica.com/XIP/v6.3"}
+    xip_root.attrib = {'xmlns':"http://preservica.com/XIP/v6.2"}
     
     # TODO create SO if need
     
@@ -215,6 +215,7 @@ def create_xip(content_path):
             
             #physicallocation
             bs_pl =  et.Element('PhysicalLocation')
+            #bs_pl.text = str(file_to_pack)
             bit_stream.append(bs_pl)
             
             #fixities
@@ -256,10 +257,10 @@ def get_checksum(bs_file, algo):
 
 def write_out(xml_root, file_path):
   
-    xml_out = minidom.parseString(et.tostring(xml_root, encoding='utf8', method='xml').decode('utf-8')).toprettyxml(indent="   ")
-    print(xml_out)
-    xml_file = open(file_path, "w")
-    xml_file.write(xml_out)
+    #xml_out = minidom.parseString(et.tostring(xml_root, encoding='UTF-8')).toprettyxml(indent="   ")
+    #print(xml_out)
+    #xml_file = open(file_path, "w")
+    et.ElementTree(xml_root).write(file_path, encoding="utf-8", xml_declaration=True)
 
     return 0
     
