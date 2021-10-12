@@ -10,6 +10,7 @@ __author__ = "David Cirella"
 __version__ = "0.1.0"
 __license__ = "MIT"
 
+import shutil
 import os, os.path
 import argparse
 import hashlib
@@ -274,6 +275,16 @@ def create_xip(args):
     os.mkdir(sips_out_path + localAIPstr)
     xip_out_path = sips_out_path + localAIPstr + '/metadata.xml'  
     write_out(xip_root, xip_out_path)
+    
+    # create content folder, copy files
+    if args.export:
+        sip_content = sips_out_path + localAIPstr + '/content'
+        os.mkdir(sip_content)
+        # copy files
+        for file_to_pack in os.listdir(content_path): 
+            if os.path.isfile(content_path + file_to_pack):
+                shutil.copy2(content_path + file_to_pack, sip_content)       
+    
     print(validate_xml(xip_out_path, './XIP-V6.xsd')) 
     
 
@@ -345,8 +356,10 @@ if __name__ == "__main__":
     parser.add_argument("-sotitle", "-sot", "--sotitle", default=0, help='Title for structural object')
     
     parser.add_argument("-parent", "-p", "--parent", default=default_parent_dest, help='Parent or destination reference')
-        parser.add_argument("-securitytag", "-s", "--securitytag", default=default_security_tag, help='Security tag for objects in sip')
+    parser.add_argument("-securitytag", "-s", "--securitytag", default=default_security_tag, help='Security tag for objects in sip')
     parser.add_argument("-assetonly", "-a", "--assetonly", action='store_true', help='Ingest files as assets (no folder)')
+    
+    parser.add_argument("-export", "-e", "--export", action='store_true', help='Export files to content subdirectory of sip')
 
     args = parser.parse_args()
     main(args)
