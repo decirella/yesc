@@ -3,8 +3,8 @@
 Create .protocol file for Presrevica ingest
 """
 
-# -c use path to dir of files
-#python3 xip_protocol.py -c ./sips/test_file/
+
+# python3 xip_protocol.py -input ./sips/test_file/ -o ./sips/ 
 
 __author__ = "David Cirella"
 __version__ = "0.1.0"
@@ -21,7 +21,7 @@ from lxml import etree
 
 
 localAIPstr = ''
-sips_out_path = './sips/'
+sips_out_path = ''
 
 
 def create_protocol(content_path):
@@ -290,22 +290,25 @@ def data_stats(data_path):
     
     return file_count, data_size
     
-
-def main(args):
+@Gooey(auto_start=True, default_size=(610, 530))
+def main():
+    global sips_out_path 
     """ Main entry point of the app """
     print(args.content_path)
-    
+    sips_out_path = (args.output_path)
    
     create_protocol(args.content_path)
     create_xip(args.content_path)
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
+    
     parser = argparse.ArgumentParser()
 
 
     # Optional argument flag 
-    parser.add_argument("-c", "--content", action="store", dest="content_path")
+    parser.add_argument("-input", "-i", "--input", action="store",  dest="content_path", help='Directory containing content files')
+    parser.add_argument("-output", "-o", "--output", action="store", dest="output_path", help='Directory to export the SIP to')
 
     args = parser.parse_args()
-    main(args)
+    main()
