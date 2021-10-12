@@ -24,6 +24,12 @@ localAIPstr = ''
 sips_out_path = ''
 
 
+## user set defaults
+default_security_tag = 'open'
+default_parent_dest = '8e7c8108-0cd7-4326-965a-db96a893fb12'
+
+
+
 def create_protocol(content_path):
     global localAIPstr
     file_count, data_size = data_stats(content_path)
@@ -77,15 +83,42 @@ def create_protocol(content_path):
     
     write_out(protocol_root, sips_out_path + localAIPstr + '.protocol') 
     
-def create_xip(content_path):
-    
+def create_xip(args):
+    content_path = args.input
     xip_root = et.Element('XIP')
     xip_root.attrib = {'xmlns':"http://preservica.com/XIP/v6.2"}
     
-    # TODO create SO if need
     
-    # TODO loop for all file in content_dir
-    # for file, checksum, cp
+    if args.assetonly:
+        iobj_parent_set = args.parent
+    else:
+        # <StructuralObject>
+        sobj =  et.Element('StructuralObject')
+        xip_root.append(sobj)
+            
+        # ref
+        sobj_ref =  et.Element('Ref')
+        sobj_uuid = str(uuid.uuid4())
+        sobj_ref.text = sobj_uuid
+        sobj.append(sobj_ref)
+            
+        # title
+        sobj_title =  et.Element('Title')
+        sobj_title.text = args.sotitle or content_path.split('/')[-2]
+        sobj.append(sobj_title)
+            
+        # security
+        sobj_sec =  et.Element('SecurityTag')
+        sobj_sec.text = 'open'
+        sobj.append(sobj_sec)
+            
+        # Parent
+        sobj_par =  et.Element('Parent')
+        sobj_par.text = args.parent
+        sobj.append(sobj_par)
+
+        iobj_parent_set = sobj_uuid
+
     for file_to_pack in os.listdir(content_path): 
         if os.path.isfile(content_path + file_to_pack):
     
@@ -111,7 +144,7 @@ def create_xip(content_path):
             
             # Parent
             iobj_par =  et.Element('Parent')
-            iobj_par.text = '8e7c8108-0cd7-4326-965a-db96a893fb12' #test_dest
+            iobj_par.text = iobj_parent_set
             iobj.append(iobj_par)
             
             ##
@@ -290,15 +323,15 @@ def data_stats(data_path):
     
     return file_count, data_size
     
-@Gooey(auto_start=True, default_size=(610, 530))
-def main():
+
+def main(args):
     global sips_out_path 
     """ Main entry point of the app """
-    print(args.content_path)
-    sips_out_path = (args.output_path)
+    print(args.input)
+    sips_out_path = (args.output)
    
-    create_protocol(args.content_path)
-    create_xip(args.content_path)
+    create_protocol(args.input)
+    create_xip(args)
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
@@ -307,8 +340,13 @@ if __name__ == "__main__":
 
 
     # Optional argument flag 
-    parser.add_argument("-input", "-i", "--input", action="store",  dest="content_path", help='Directory containing content files')
-    parser.add_argument("-output", "-o", "--output", action="store", dest="output_path", help='Directory to export the SIP to')
+    parser.add_argument("-input", "-i", "--input", help='Directory containing content files')
+    parser.add_argument("-output", "-o", "--output", help='Directory to export the SIP to')
+    parser.add_argument("-sotitle", "-sot", "--sotitle", default=0, help='Title for structural object')
+    
+    parser.add_argument("-parent", "-p", "--parent", default=default_parent_dest, help='Parent or destination reference')
+        parser.add_argument("-securitytag", "-s", "--securitytag", default=default_security_tag, help='Security tag for objects in sip')
+    parser.add_argument("-assetonly", "-a", "--assetonly", action='store_true', help='Ingest files as assets (no folder)')
 
     args = parser.parse_args()
-    main()
+    main(args)
