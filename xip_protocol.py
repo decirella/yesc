@@ -11,7 +11,6 @@ __version__ = "0.1.0"
 __license__ = "MIT"
 
 import shutil
-import os, os.path
 import argparse
 import hashlib
 import uuid
@@ -19,6 +18,7 @@ import datetime
 import xml.etree.ElementTree as et
 from xml.dom import minidom
 from lxml import etree
+from pathlib import Path
 
 
 localAIPstr = ''
@@ -120,8 +120,8 @@ def create_xip(args):
 
         iobj_parent_set = sobj_uuid
 
-    for file_to_pack in os.listdir(content_path): 
-        if os.path.isfile(content_path + file_to_pack):
+    for file_to_pack in Path(content_path).iterdir(): 
+        if Path(file_to_pack).is_file():
     
             # <InformationObject>
             iobj =  et.Element('InformationObject')
@@ -243,7 +243,7 @@ def create_xip(args):
                     
             #filesize
             bs_size = et.Element('FileSize')
-            bs_size_get = str(os.path.getsize(content_path + file_to_pack))
+            bs_size_get = str(Path(file_to_pack).stat().st_size)
             bs_size.text = bs_size_get
             bit_stream.append(bs_size)
             
@@ -267,23 +267,23 @@ def create_xip(args):
             
             ##fixixty val
             bs_fixity_val =  et.Element('FixityValue')
-            bs_checksum = get_checksum(content_path + file_to_pack, 'SHA512')
+            bs_checksum = get_checksum(file_to_pack, 'SHA512')
             bs_fixity_val.text = bs_checksum
             bs_fixity.append(bs_fixity_val)
         
     
-    os.mkdir(sips_out_path + localAIPstr)
+    Path(sips_out_path + localAIPstr).mkdir()
     xip_out_path = sips_out_path + localAIPstr + '/metadata.xml'  
     write_out(xip_root, xip_out_path)
     
     # create content folder, copy files
     if args.export:
         sip_content = sips_out_path + localAIPstr + '/content'
-        os.mkdir(sip_content)
+        Path(sip_content).mkdir()
         # copy files
-        for file_to_pack in os.listdir(content_path): 
-            if os.path.isfile(content_path + file_to_pack):
-                shutil.copy2(content_path + file_to_pack, sip_content)       
+        for file_to_pack in Path(content_path).iterdir(): 
+            if Path(file_to_pack).is_file():
+                shutil.copy2(file_to_pack, sip_content)       
     
     print(validate_xml(xip_out_path, './XIP-V6.xsd')) 
     
@@ -324,14 +324,14 @@ def data_stats(data_path):
     ### count of files
     #print(len(os.listdir(data_path)))
     
-    file_list = [name for name in os.listdir(data_path) if os.path.isfile(data_path + name)]
+    file_list = [name for name in Path(data_path).iterdir() if Path(name).is_file()]
     file_count = len(file_list)
     print(file_count)
     
     data_size = 0
     for f in file_list:
-        data_size += os.path.getsize(data_path + f)
-    
+        data_size += Path(f).stat().st_size
+        
     return file_count, data_size
     
 
