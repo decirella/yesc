@@ -10,6 +10,7 @@ __author__ = "David Cirella"
 __version__ = "0.1.0"
 __license__ = "MIT"
 
+import sys
 import shutil
 import argparse
 import hashlib
@@ -27,14 +28,15 @@ sips_out_path = ''
 
 ## user set defaults
 default_security_tag = 'open'
-default_parent_dest = '8e7c8108-0cd7-4326-965a-db96a893fb12'
+default_parent_dest = '08bf94f8-8752-4f16-aac3-84c1478ea996' #dev default ingest
+
 
 
 
 def create_protocol(content_path):
     global localAIPstr
     file_count, data_size = data_stats(content_path)
-    print(file_count)
+
     
     protocol_root = et.Element('protocol')
     protocol_root.attrib = {'xmlns':"http://www.tessella.com/xipcreateprotocol/v1"}
@@ -56,12 +58,12 @@ def create_protocol(content_path):
     
     #submissionName
     submissionName =  et.Element('submissionName')
-    submissionName.text = str(content_path.split('/')[-2])
+    submissionName.text = str(Path(content_path).parts[-2])
     protocol_root.append(submissionName)
     
     #catalogueName
     catalogueName =  et.Element('catalogueName')
-    catalogueName.text = str(content_path.split('/')[-2])
+    catalogueName.text = str(Path(content_path).parts[-2])
     protocol_root.append(catalogueName)
     
     
@@ -105,12 +107,12 @@ def create_xip(args):
             
         # title
         sobj_title =  et.Element('Title')
-        sobj_title.text = args.sotitle or content_path.split('/')[-2]
+        sobj_title.text = args.sotitle or str(Path(content_path).parts[-2])
         sobj.append(sobj_title)
             
         # security
         sobj_sec =  et.Element('SecurityTag')
-        sobj_sec.text = 'open'
+        sobj_sec.text = args.securitytag
         sobj.append(sobj_sec)
             
         # Parent
@@ -135,12 +137,12 @@ def create_xip(args):
             
             # title
             iobj_title =  et.Element('Title')
-            iobj_title.text = str(file_to_pack)
+            iobj_title.text = Path(file_to_pack).name
             iobj.append(iobj_title)
             
             # security
             iobj_sec =  et.Element('SecurityTag')
-            iobj_sec.text = 'open'
+            iobj_sec.text = args.securitytag
             iobj.append(iobj_sec)
             
             # Parent
@@ -191,12 +193,12 @@ def create_xip(args):
             
             #title
             cobj_title = et.Element('Title')
-            cobj_title.text = str(file_to_pack)
+            cobj_title.text = Path(file_to_pack).name
             cobj.append(cobj_title)
             
             #security
             cobj_sec = et.Element('SecurityTag')
-            cobj_sec.text = 'open'
+            cobj_sec.text = args.securitytag
             cobj.append(cobj_sec)
             
             
@@ -228,7 +230,7 @@ def create_xip(args):
             
             #bitstream
             gen_bs = et.Element('Bitstream')
-            gen_bs.text = str(file_to_pack)
+            gen_bs.text = Path(file_to_pack).name
             gen_bss.append(gen_bs)
 
             ##
@@ -238,7 +240,7 @@ def create_xip(args):
             
             #filename
             bs_file = et.Element('Filename')
-            bs_file.text = str(file_to_pack)
+            bs_file.text = Path(file_to_pack).name
             bit_stream.append(bs_file)
                     
             #filesize
@@ -249,7 +251,7 @@ def create_xip(args):
             
             #physicallocation
             bs_pl =  et.Element('PhysicalLocation')
-            #bs_pl.text = str(file_to_pack)
+            #bs_pl.text = Path(file_to_pack).name
             bit_stream.append(bs_pl)
             
             #fixities
@@ -285,18 +287,18 @@ def create_xip(args):
             if Path(file_to_pack).is_file():
                 shutil.copy2(file_to_pack, sip_content)       
     
-    print(validate_xml(xip_out_path, './XIP-V6.xsd')) 
+    #print(validate_xml(xip_out_path, './XIP-V6.xsd')) 
     
 
 def get_checksum(bs_file, algo):
-    print(bs_file, algo)
+    #print(bs_file, algo)
 
     sha512_hash = hashlib.sha512()
     with open(bs_file,"rb") as f:
     # Read and update hash string value in blocks of 4K
         for byte_block in iter(lambda: f.read(4096),b""):
             sha512_hash.update(byte_block)
-        print(sha512_hash.hexdigest())
+        #print(sha512_hash.hexdigest())
     return sha512_hash.hexdigest()
 
 def write_out(xml_root, file_path):
@@ -320,25 +322,30 @@ def validate_xml(xml_path: str, xsd_path: str) -> bool:
 
     
 def data_stats(data_path):
-    print(data_path)
+    #print(data_path)
     ### count of files
     #print(len(os.listdir(data_path)))
     
     file_list = [name for name in Path(data_path).iterdir() if Path(name).is_file()]
     file_count = len(file_list)
-    print(file_count)
+    #print(file_count)
     
     data_size = 0
     for f in file_list:
         data_size += Path(f).stat().st_size
-        
+    
+    # stdout reporting
+    print(' ')
+    print('Files to be packaged: ', file_count)    
+    print('Total size: ', data_size, 'bytes')
+    
     return file_count, data_size
     
 
 def main(args):
     global sips_out_path 
     """ Main entry point of the app """
-    print(args.input)
+    #print(args.input)
     sips_out_path = (args.output)
    
     create_protocol(args.input)
@@ -361,5 +368,13 @@ if __name__ == "__main__":
     
     parser.add_argument("-export", "-e", "--export", action='store_true', help='Export files to content subdirectory of sip')
 
-    args = parser.parse_args()
-    main(args)
+
+    try:
+        args = parser.parse_args()
+        main(args)
+    except:
+        ## message for run with no args
+        parser.print_help()
+        sys.exit(0)
+    
+    
