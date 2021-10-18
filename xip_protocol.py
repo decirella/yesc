@@ -509,7 +509,7 @@ if __name__ == "__main__":
     
     parser.add_argument("-export", "-e", "--export", action='store_true', help='Export files to content subdirectory of sip')
 
-    parser.add_argument("-aspace", "-ao", "--aspace", help='ArchivesSpace archival object refernence')
+    parser.add_argument("-aspace", "-ao", "--aspace", help='ArchivesSpace archival object reference: archival_object_5555555')
 
     try:
         args = parser.parse_args()
