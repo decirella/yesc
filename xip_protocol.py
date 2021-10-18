@@ -58,12 +58,12 @@ def create_protocol(content_path):
     
     #submissionName
     submissionName =  et.Element('submissionName')
-    submissionName.text = str(Path(content_path).parts[-2])
+    submissionName.text = str(Path(content_path).parts[-1])
     protocol_root.append(submissionName)
     
     #catalogueName
     catalogueName =  et.Element('catalogueName')
-    catalogueName.text = str(Path(content_path).parts[-2])
+    catalogueName.text = str(Path(content_path).parts[-1])
     protocol_root.append(catalogueName)
     
     
@@ -107,8 +107,14 @@ def create_xip(args):
             
         # title
         sobj_title =  et.Element('Title')
-        sobj_title.text = args.sotitle or str(Path(content_path).parts[-2])
+        sobj_title.text = args.sotitle or str(Path(content_path).parts[-1])
         sobj.append(sobj_title)
+        
+        
+        # description
+        sobj_desc =  et.Element('Description')
+        # sobj_desc.text = args.
+        sobj.append(sobj_desc)
             
         # security
         sobj_sec =  et.Element('SecurityTag')
@@ -273,6 +279,141 @@ def create_xip(args):
             bs_fixity_val.text = bs_checksum
             bs_fixity.append(bs_fixity_val)
         
+    if args.aspace:
+        print('aspace AO ref: ', args.aspace)
+        # TODO test with asset only
+
+        # create ASpace metadata elements
+        # ASPACE <StructuralObject>
+        as_sobj =  et.Element('StructuralObject')
+        xip_root.insert(0, as_sobj)
+            
+        # ref
+        as_sobj_ref =  et.Element('Ref')
+        as_sobj_uuid = str(uuid.uuid4())
+        as_sobj_ref.text = as_sobj_uuid
+        as_sobj.append(as_sobj_ref)
+            
+        # title
+        as_sobj_title =  et.Element('Title')
+        as_sobj_title.text = args.aspace
+        as_sobj.append(as_sobj_title)
+        
+        # description
+        as_sobj_desc =  et.Element('Description')
+        # sobj_desc.text = args.
+        as_sobj.append(as_sobj_desc)
+            
+        # security
+        as_sobj_sec =  et.Element('SecurityTag')
+        as_sobj_sec.text = args.securitytag
+        as_sobj.append(as_sobj_sec)
+        
+        # change out SO parent ref
+        sobj_par.text = as_sobj_uuid
+        
+        
+        # identifier gp as_sobj
+        id_as_gp_sobj =  et.Element('Identifier')
+        xip_root.append(id_as_gp_sobj)
+        
+        # type
+        id_as_gp_sobj_type =  et.Element('Type')
+        id_as_gp_sobj_type.text = 'code'
+        id_as_gp_sobj.append(id_as_gp_sobj_type)
+        
+        # value
+        id_as_gp_sobj_val =  et.Element('Value')
+        id_as_gp_sobj_val.text = args.aspace
+        id_as_gp_sobj.append(id_as_gp_sobj_val)  
+        
+        # entity
+        id_as_gp_sobj_ent =  et.Element('Entity')
+        id_as_gp_sobj_ent.text = as_sobj_uuid
+        id_as_gp_sobj.append(id_as_gp_sobj_ent)       
+            
+
+
+        # aspace so grandparent ASpace sync, linked to empty parent SO 
+        md_as_gp_sobj =  et.Element('Metadata')
+        md_as_gp_sobj.attrib  = {'schemaUri' : "http://preservica.com/LegacyXIP"}
+        xip_root.append(md_as_gp_sobj)
+        
+        # ref
+        md_as_gp_sobj_ref =  et.Element('Ref')
+        md_as_gp_sobj_uuid = str(uuid.uuid4())
+        md_as_gp_sobj_ref.text = md_as_gp_sobj_uuid
+        md_as_gp_sobj.append(md_as_gp_sobj_ref)
+        
+        # entity
+        md_as_gp_sobj_ent =  et.Element('Entity')
+        md_as_gp_sobj_ent.text = as_sobj_uuid
+        md_as_gp_sobj.append(md_as_gp_sobj_ent)
+        
+        # content
+        md_as_gp_sobj_ct =  et.Element('Content')
+        md_as_gp_sobj.append(md_as_gp_sobj_ct)
+            
+            #legacy XIP
+        md_as_gp_sobj_lx =  et.Element('LegacyXIP')
+        md_as_gp_sobj_lx.attrib  = {'xmlns' : "http://preservica.com/LegacyXIP"}
+        md_as_gp_sobj_ct.append(md_as_gp_sobj_lx)
+            #virtual
+        md_as_gp_sobj_v =  et.Element('Virtual')
+        md_as_gp_sobj_v.text  = 'false'
+        md_as_gp_sobj_lx.append(md_as_gp_sobj_v)
+        
+        
+        # aspace so parent ASpace sync, linked parent SO 
+        md_as_sobj =  et.Element('Metadata')
+        md_as_sobj.attrib  = {'schemaUri' : "http://preservica.com/LegacyXIP"}
+        xip_root.append(md_as_sobj)
+        
+        # ref
+        md_as_sobj_ref =  et.Element('Ref')
+        md_as_sobj_uuid = str(uuid.uuid4())
+        md_as_sobj_ref.text = md_as_sobj_uuid
+        md_as_sobj.append(md_as_sobj_ref)
+        
+        # entity
+        md_as_sobj_ent =  et.Element('Entity')
+        md_as_sobj_ent.text = sobj_uuid
+        md_as_sobj.append(md_as_sobj_ent)
+        
+        # content
+        md_as_sobj_ct =  et.Element('Content')
+        md_as_sobj.append(md_as_sobj_ct)
+            
+            #legacy XIP
+        md_as_sobj_lx =  et.Element('LegacyXIP')
+        md_as_sobj_lx.attrib  = {'xmlns' : "http://preservica.com/LegacyXIP"}
+        md_as_sobj_ct.append(md_as_sobj_lx)
+            #AccessionRef
+        md_as_sobj_aref =  et.Element('AccessionRef')
+        md_as_sobj_aref.text  = 'catalogue'
+        md_as_sobj_lx.append(md_as_sobj_aref)
+        
+        # identifier as_sobj
+        id_as_sobj =  et.Element('Identifier')
+        xip_root.append(id_as_sobj)
+        
+        # type
+        id_as_sobj_type =  et.Element('Type')
+        id_as_sobj_type.text = 'code'
+        id_as_sobj.append(id_as_sobj_type)
+        
+        # value
+        id_as_sobj_val =  et.Element('Value')
+        id_as_sobj_val.text = args.aspace
+        id_as_sobj.append(id_as_sobj_val)  
+        
+        # entity
+        id_as_sobj_ent =  et.Element('Entity')
+        id_as_sobj_ent.text = sobj_uuid
+        id_as_sobj.append(id_as_sobj_ent)           
+
+
+
     
     Path(sips_out_path + localAIPstr).mkdir()
     xip_out_path = sips_out_path + localAIPstr + '/metadata.xml'  
@@ -368,6 +509,7 @@ if __name__ == "__main__":
     
     parser.add_argument("-export", "-e", "--export", action='store_true', help='Export files to content subdirectory of sip')
 
+    parser.add_argument("-aspace", "-ao", "--aspace", help='ArchivesSpace archival object refernence')
 
     try:
         args = parser.parse_args()
