@@ -113,7 +113,7 @@ def create_xip(args):
         
         # description
         sobj_desc =  et.Element('Description')
-        # sobj_desc.text = args.
+        sobj_desc.text = args.sodescription
         sobj.append(sobj_desc)
             
         # security
@@ -145,6 +145,11 @@ def create_xip(args):
             iobj_title =  et.Element('Title')
             iobj_title.text = Path(file_to_pack).name
             iobj.append(iobj_title)
+            
+             # description
+            iobj_desc =  et.Element('Description')
+            iobj_desc.text = args.iodescription
+            iobj.append(iobj_desc)
             
             # security
             iobj_sec =  et.Element('SecurityTag')
@@ -510,7 +515,23 @@ if __name__ == "__main__":
     parser.add_argument("-export", "-e", "--export", action='store_true', help='Export files to content subdirectory of sip')
 
     parser.add_argument("-aspace", "-ao", "--aspace", help='ArchivesSpace archival object reference: archival_object_5555555')
+    
+    parser.add_argument("-sodescription", "-sod", "--sodescription", help='Description field for Structural Objects')
+    
+    parser.add_argument("-iodescription", "-iod", "--iodescription", help='Description field for all Information Objects')
+    
+    
+    
+    # TODO
+        # description
+        # SO - embed metadata xml file as metadata element
+        # IO - embed metadata xml file as metadata element
+        # CO - embed metadata xml file as metadata element
+        
+        # identifiers - single, multiple, define type and set value
+        # voyager - sync
 
+    
     try:
         args = parser.parse_args()
         main(args)
