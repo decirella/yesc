@@ -632,7 +632,6 @@ if __name__ == "__main__":
 
         # voyager - sync
 
-    '''
     try:
         args = parser.parse_args()
         main(args)
@@ -640,6 +639,4 @@ if __name__ == "__main__":
         ## message for run with no args
         parser.print_help()
         sys.exit(0)
-    '''
-    args = parser.parse_args()
-    main(args)
+
