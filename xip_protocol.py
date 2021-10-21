@@ -89,8 +89,8 @@ def create_protocol(content_path):
 def create_xip(args):
     content_path = args.input
     xip_root = et.Element('XIP')
+    #et.register_namespace('XIP','http://preservica.com/XIP/v6.2')
     xip_root.attrib = {'xmlns':"http://preservica.com/XIP/v6.2"}
-    
     
     if args.assetonly:
         iobj_parent_set = args.parent
@@ -283,6 +283,32 @@ def create_xip(args):
             bs_checksum = get_checksum(file_to_pack, 'SHA512')
             bs_fixity_val.text = bs_checksum
             bs_fixity.append(bs_fixity_val)
+            
+            ## check for embedding metadata at IO level
+            if args.iometadata:
+                meta_entity = iobj_uuid
+                md_embed_iobj = embed_metadata(args.iometadata, meta_entity)
+                xip_root.append(md_embed_iobj)
+                
+                   # check of creting identifier at so level
+            if args.ioidtype:
+                id_entity = iobj_uuid
+                id_iobj = gen_id(args, id_entity, 'io')
+                xip_root.append(id_iobj)
+    
+    ## check for embedding metadata at SO level
+    if args.sometadata:
+        meta_entity = sobj_uuid
+        md_embed_sobj = embed_metadata(args.sometadata, meta_entity)
+        xip_root.append(md_embed_sobj)
+        
+    # check of creting identifier at so level
+    if args.soidtype:
+        id_entity = sobj_uuid
+        id_sobj = gen_id(args, id_entity, 'so')
+        xip_root.append(id_sobj)
+   
+        
         
     if args.aspace:
         print('aspace AO ref: ', args.aspace)
@@ -417,8 +443,7 @@ def create_xip(args):
         id_as_sobj_ent.text = sobj_uuid
         id_as_sobj.append(id_as_sobj_ent)           
 
-
-
+    
     
     Path(sips_out_path + localAIPstr).mkdir()
     xip_out_path = sips_out_path + localAIPstr + '/metadata.xml'  
@@ -446,6 +471,83 @@ def get_checksum(bs_file, algo):
             sha512_hash.update(byte_block)
         #print(sha512_hash.hexdigest())
     return sha512_hash.hexdigest()
+
+def gen_id(args, id_entity, obj_type):
+    if 'so' in obj_type:
+        id_type = args.soidtype
+        id_value = args.soidvalue
+    elif 'io' in obj_type:
+        id_type = args.ioidtype
+        id_value = args.ioidvalue
+        
+    # identifier sobj
+    id_obj =  et.Element('Identifier')
+  
+        
+    # type
+    id_obj_type =  et.Element('Type')
+    id_obj_type.text = id_type
+    id_obj.append(id_obj_type)
+       
+    # value
+    id_obj_val =  et.Element('Value')
+    id_obj_val.text = id_value
+    id_obj.append(id_obj_val)  
+        
+    # entity
+    id_obj_ent =  et.Element('Entity')
+    id_obj_ent.text = id_entity
+    id_obj.append(id_obj_ent)        
+       
+    return id_obj
+
+def embed_metadata(meta_file_embed, meta_entity):
+    # read in xml
+    doc_in_tree = et.parse(meta_file_embed)
+    doc_in_root = doc_in_tree.getroot()
+    
+    #get namespace and parse for uri
+    doc_in_ns = doc_in_tree.getroot().tag
+    
+    def xmlns_normalize(name):
+        if name[0] == "{":
+            uri, tag = name[1:].split("}")
+            return uri, tag
+        else:
+            return name
+    
+    doc_ns_uri, doc_ns_name = xmlns_normalize(doc_in_ns)
+    
+    #print(doc_ns_uri)
+    et.register_namespace(doc_ns_name , doc_ns_uri)
+    # create elements
+    md_embed_sobj =  et.Element('Metadata')   
+    md_embed_sobj.attrib  = {'schemaUri' : doc_ns_uri}
+    
+    # ref
+    md_embed_sobj_ref =  et.Element('Ref')
+    md_embed_sobj_uuid = str(uuid.uuid4())
+    md_embed_sobj_ref.text = md_embed_sobj_uuid
+    md_embed_sobj.append(md_embed_sobj_ref)
+    
+    # entity
+    md_embed_sobj_ent =  et.Element('Entity')
+    md_embed_sobj_ent.text = meta_entity
+    md_embed_sobj.append(md_embed_sobj_ent)
+       
+    # content
+    md_embed_sobj_ct =  et.Element('Content')
+    md_embed_sobj.append(md_embed_sobj_ct)
+    
+    #print(et.tostring(doc_in_root)) 
+    # embed read in file
+    md_embed_sobj_ct.append(doc_in_root)
+    
+    #print(meta_file_embed)
+    
+    return md_embed_sobj
+
+   
 
 def write_out(xml_root, file_path):
   
@@ -507,31 +609,30 @@ if __name__ == "__main__":
     parser.add_argument("-input", "-i", "--input", help='Directory containing content files')
     parser.add_argument("-output", "-o", "--output", help='Directory to export the SIP to')
     parser.add_argument("-sotitle", "-sot", "--sotitle", default=0, help='Title for structural object')
-    
     parser.add_argument("-parent", "-p", "--parent", default=default_parent_dest, help='Parent or destination reference')
     parser.add_argument("-securitytag", "-s", "--securitytag", default=default_security_tag, help='Security tag for objects in sip')
     parser.add_argument("-assetonly", "-a", "--assetonly", action='store_true', help='Ingest files as assets (no folder)')
-    
     parser.add_argument("-export", "-e", "--export", action='store_true', help='Export files to content subdirectory of sip')
-
     parser.add_argument("-aspace", "-ao", "--aspace", help='ArchivesSpace archival object reference: archival_object_5555555')
-    
     parser.add_argument("-sodescription", "-sod", "--sodescription", help='Description field for Structural Objects')
-    
     parser.add_argument("-iodescription", "-iod", "--iodescription", help='Description field for all Information Objects')
     
+    parser.add_argument("-sometadata", "-som", "--sometadata", help='Embed content of XML file as metadata linked to SO')
+    parser.add_argument("-iometadata", "-iom", "--iometadata", help='Embed content of XML file as metadata linked to IO')
+
+    parser.add_argument("-ioidtype", "-ioidt", "--ioidtype", help='Identifier type for all IOs')
+    parser.add_argument("-ioidvalue", "-ioidv", "--ioidvalue", help='Identifier value for all IOs')
     
-    
-    # TODO
-        # description
-        # SO - embed metadata xml file as metadata element
-        # IO - embed metadata xml file as metadata element
-        # CO - embed metadata xml file as metadata element
-        
-        # identifiers - single, multiple, define type and set value
-        # voyager - sync
+    parser.add_argument("-soidtype", "-soidt", "--soidtype", help='Identifier type for all SO')
+    parser.add_argument("-soidvalue", "-soidv", "--soidvalue", help='Identifier value for all SO')
 
     
+    # TODO
+        # CO - embed metadata xml file as metadata element
+
+        # voyager - sync
+
+    '''
     try:
         args = parser.parse_args()
         main(args)
@@ -539,5 +640,6 @@ if __name__ == "__main__":
         ## message for run with no args
         parser.print_help()
         sys.exit(0)
-    
-    
+    '''
+    args = parser.parse_args()
+    main(args)
