@@ -7,7 +7,7 @@ Create .protocol file for Presrevica ingest
 # python3 xip_protocol.py -input ./sips/test_file/ -o ./sips/ 
 
 __author__ = "David Cirella"
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 __license__ = "MIT"
 
 import sys
