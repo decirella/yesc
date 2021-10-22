@@ -28,7 +28,7 @@ sips_out_path = ''
 
 ## user set defaults
 default_security_tag = 'open'
-default_parent_dest = '08bf94f8-8752-4f16-aac3-84c1478ea996' #dev default ingest
+#default_parent_dest = '08bf94f8-8752-4f16-aac3-84c1478ea996' #dev default ingest
 
 
 
@@ -91,9 +91,12 @@ def create_xip(args):
     xip_root = et.Element('XIP')
     #et.register_namespace('XIP','http://preservica.com/XIP/v6.2')
     xip_root.attrib = {'xmlns':"http://preservica.com/XIP/v6.2"}
+          
     
     if args.assetonly:
+        sobj_uuid = None
         iobj_parent_set = args.parent
+      
     else:
         # <StructuralObject>
         sobj =  et.Element('StructuralObject')
@@ -120,11 +123,14 @@ def create_xip(args):
         sobj_sec =  et.Element('SecurityTag')
         sobj_sec.text = args.securitytag
         sobj.append(sobj_sec)
-            
-        # Parent
-        sobj_par =  et.Element('Parent')
-        sobj_par.text = args.parent
-        sobj.append(sobj_par)
+        
+        if args.parent != None:    
+            # Parent
+            sobj_par =  et.Element('Parent')
+            sobj_par.text = args.parent
+            sobj.append(sobj_par)
+        
+        
 
         iobj_parent_set = sobj_uuid
 
@@ -156,10 +162,12 @@ def create_xip(args):
             iobj_sec.text = args.securitytag
             iobj.append(iobj_sec)
             
-            # Parent
-            iobj_par =  et.Element('Parent')
-            iobj_par.text = iobj_parent_set
-            iobj.append(iobj_par)
+            if iobj_parent_set != None:
+                # Parent
+                iobj_par =  et.Element('Parent')
+                iobj_par.text = iobj_parent_set
+                iobj.append(iobj_par)
+            
             
             ##
             # Representation
@@ -284,6 +292,12 @@ def create_xip(args):
             bs_fixity_val.text = bs_checksum
             bs_fixity.append(bs_fixity_val)
             
+             ## IO handle parentless
+            if iobj_parent_set == None:
+                print('parentless')
+                md_virt = parentless(iobj_uuid)
+                xip_root.append(md_virt)
+            
             ## check for embedding metadata at IO level
             if args.iometadata:
                 meta_entity = iobj_uuid
@@ -295,6 +309,12 @@ def create_xip(args):
                 id_entity = iobj_uuid
                 id_iobj = gen_id(args, id_entity, 'io')
                 xip_root.append(id_iobj)
+    
+    ## SO handle parentless
+    if sobj_uuid != None and args.parent == None:
+        print('parentless')
+        md_virt = parentless(sobj_uuid)
+        xip_root.append(md_virt)
     
     ## check for embedding metadata at SO level
     if args.sometadata:
@@ -364,7 +384,7 @@ def create_xip(args):
         id_as_gp_sobj.append(id_as_gp_sobj_ent)       
             
 
-
+        ## refactor
         # aspace so grandparent ASpace sync, linked to empty parent SO 
         md_as_gp_sobj =  et.Element('Metadata')
         md_as_gp_sobj.attrib  = {'schemaUri' : "http://preservica.com/LegacyXIP"}
@@ -547,13 +567,39 @@ def embed_metadata(meta_file_embed, meta_entity):
     
     return md_embed_sobj
 
-   
+## refactor
+def parentless(entity_from):
+    md_virt =  et.Element('Metadata')
+    md_virt.attrib  = {'schemaUri' : "http://preservica.com/LegacyXIP"}
+            
+    # ref
+    md_virt_ref =  et.Element('Ref')
+    md_virt_uuid = str(uuid.uuid4())
+    md_virt_ref.text = md_virt_uuid
+    md_virt.append(md_virt_ref)
+            
+    # entity
+    md_virt_ent =  et.Element('Entity')
+    md_virt_ent.text = entity_from
+    md_virt.append(md_virt_ent)
+
+    # content
+    md_virt_ct =  et.Element('Content')
+    md_virt.append(md_virt_ct)
+                
+    #legacy XIP
+    md_virt_lx =  et.Element('LegacyXIP')
+    md_virt_lx.attrib  = {'xmlns' : "http://preservica.com/LegacyXIP"}
+    md_virt_ct.append(md_virt_lx)
+
+    #virtual
+    md_virt_v =  et.Element('Virtual')
+    md_virt_v.text  = 'false'
+    md_virt_lx.append(md_virt_v)
+
+    return md_virt
 
 def write_out(xml_root, file_path):
-  
-    #xml_out = minidom.parseString(et.tostring(xml_root, encoding='UTF-8')).toprettyxml(indent="   ")
-    #print(xml_out)
-    #xml_file = open(file_path, "w")
     et.ElementTree(xml_root).write(file_path, encoding="utf-8", xml_declaration=True)
 
     return 0
@@ -570,13 +616,9 @@ def validate_xml(xml_path: str, xsd_path: str) -> bool:
 
     
 def data_stats(data_path):
-    #print(data_path)
-    ### count of files
-    #print(len(os.listdir(data_path)))
     
     file_list = [name for name in Path(data_path).iterdir() if Path(name).is_file()]
     file_count = len(file_list)
-    #print(file_count)
     
     data_size = 0
     for f in file_list:
@@ -609,7 +651,7 @@ if __name__ == "__main__":
     parser.add_argument("-input", "-i", "--input", help='Directory containing content files')
     parser.add_argument("-output", "-o", "--output", help='Directory to export the SIP to')
     parser.add_argument("-sotitle", "-sot", "--sotitle", default=0, help='Title for structural object')
-    parser.add_argument("-parent", "-p", "--parent", default=default_parent_dest, help='Parent or destination reference')
+    parser.add_argument("-parent", "-p", "--parent", default=None, help='Parent or destination reference')
     parser.add_argument("-securitytag", "-s", "--securitytag", default=default_security_tag, help='Security tag for objects in sip')
     parser.add_argument("-assetonly", "-a", "--assetonly", action='store_true', help='Ingest files as assets (no folder)')
     parser.add_argument("-export", "-e", "--export", action='store_true', help='Export files to content subdirectory of sip')
@@ -631,7 +673,7 @@ if __name__ == "__main__":
         # CO - embed metadata xml file as metadata element
 
         # voyager - sync
-
+'''
     try:
         args = parser.parse_args()
         main(args)
@@ -639,4 +681,6 @@ if __name__ == "__main__":
         ## message for run with no args
         parser.print_help()
         sys.exit(0)
-
+'''
+args = parser.parse_args()
+main(args)
