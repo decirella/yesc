@@ -7,7 +7,7 @@ Create .protocol file for Presrevica ingest
 # python3 xip_protocol.py -input ./sips/test_file/ -o ./sips/ 
 
 __author__ = "David Cirella"
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __license__ = "MIT"
 
 import sys
@@ -95,6 +95,10 @@ def create_xip(args):
     
     if args.assetonly:
         sobj_uuid = None
+        
+        if args.parent == None:
+            print('ERROR : Parent must be provided for assest only ingests')   
+            exit()
         iobj_parent_set = args.parent
       
     else:
@@ -162,11 +166,10 @@ def create_xip(args):
             iobj_sec.text = args.securitytag
             iobj.append(iobj_sec)
             
-            if iobj_parent_set != None:
-                # Parent
-                iobj_par =  et.Element('Parent')
-                iobj_par.text = iobj_parent_set
-                iobj.append(iobj_par)
+            # Parent
+            iobj_par =  et.Element('Parent')
+            iobj_par.text = iobj_parent_set
+            iobj.append(iobj_par)
             
             
             ##
@@ -292,12 +295,13 @@ def create_xip(args):
             bs_fixity_val.text = bs_checksum
             bs_fixity.append(bs_fixity_val)
             
+            '''
              ## IO handle parentless
             if iobj_parent_set == None:
                 print('parentless')
                 md_virt = parentless(iobj_uuid)
                 xip_root.append(md_virt)
-            
+            '''
             ## check for embedding metadata at IO level
             if args.iometadata:
                 meta_entity = iobj_uuid
@@ -312,7 +316,6 @@ def create_xip(args):
     
     ## SO handle parentless
     if sobj_uuid != None and args.parent == None:
-        print('parentless')
         md_virt = parentless(sobj_uuid)
         xip_root.append(md_virt)
     
@@ -672,8 +675,7 @@ if __name__ == "__main__":
     # TODO
         # CO - embed metadata xml file as metadata element
 
-        # voyager - sync
-'''
+
     try:
         args = parser.parse_args()
         main(args)
@@ -681,6 +683,4 @@ if __name__ == "__main__":
         ## message for run with no args
         parser.print_help()
         sys.exit(0)
-'''
-args = parser.parse_args()
-main(args)
+
