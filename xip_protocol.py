@@ -284,14 +284,17 @@ def create_xip(args):
             bs_fixity =  et.Element('Fixity')
             bs_fixities.append(bs_fixity)
             
+            # fixity
+            hash_out, hash_algo = get_checksum(file_to_pack, args)
+            
             ##fixitiy ALgo
             bs_fixity_algo =  et.Element('FixityAlgorithmRef')
-            bs_fixity_algo.text = 'SHA512'
+            bs_fixity_algo.text = hash_algo
             bs_fixity.append(bs_fixity_algo)
             
             ##fixixty val
             bs_fixity_val =  et.Element('FixityValue')
-            bs_checksum = get_checksum(file_to_pack, 'SHA512')
+            bs_checksum = hash_out
             bs_fixity_val.text = bs_checksum
             bs_fixity.append(bs_fixity_val)
             
@@ -484,16 +487,34 @@ def create_xip(args):
     #print(validate_xml(xip_out_path, './XIP-V6.xsd')) 
     
 
-def get_checksum(bs_file, algo):
-    #print(bs_file, algo)
-
-    sha512_hash = hashlib.sha512()
+def get_checksum(bs_file, args):
+    if args.md5:
+        #
+        algo = 'MD5'
+        bs_hash = hashlib.md5()
+    elif args.sha1:
+        #
+        algo = 'SHA1'
+        bs_hash = hashlib.sha1()
+    elif args.sha256:
+        #
+        algo = 'SHA256'
+        bs_hash = hashlib.sha256()
+    elif args.sha512:
+        #
+        algo = 'SHA512'
+        bs_hash = hashlib.sha512()
+    else:
+        algo = 'SHA512'
+        bs_hash = hashlib.sha512()
+        
+    
     with open(bs_file,"rb") as f:
     # Read and update hash string value in blocks of 4K
         for byte_block in iter(lambda: f.read(4096),b""):
-            sha512_hash.update(byte_block)
-        #print(sha512_hash.hexdigest())
-    return sha512_hash.hexdigest()
+            bs_hash.update(byte_block)
+        hash_out = bs_hash.hexdigest()
+    return hash_out, algo
 
 def gen_id(args, id_entity, obj_type):
     if 'so' in obj_type:
@@ -671,6 +692,12 @@ if __name__ == "__main__":
     parser.add_argument("-soidtype", "-soidt", "--soidtype", help='Identifier type for all SO')
     parser.add_argument("-soidvalue", "-soidv", "--soidvalue", help='Identifier value for all SO')
 
+
+    parser.add_argument("-md5", "--md5", action='store_true', help='fixity values will  be generated using the MD5 algorithm')
+    parser.add_argument("-sha1", "--sha1", action='store_true', help='fixity values will be generated using the SHA1 algorithm')
+    parser.add_argument("-sha256", "--sha256", action='store_true', help='fixity values will be generated using the SHA256 algorithm')
+    parser.add_argument("-sha512", "--sha512", action='store_true', help='fixity values will be generated using the SHA512 algorithm')
+    
     
     # TODO
         # CO - embed metadata xml file as metadata element
