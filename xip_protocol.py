@@ -868,7 +868,7 @@ def validate_xml(xml_path: str, xsd_path: str) -> bool:
     
 def data_stats(data_path):
     
-    file_list = [name for name in Path(data_path).iterdir() if Path(name).is_file()]
+    file_list = [name for name in Path(data_path).rglob("*") if Path(name).is_file()]
     file_count = len(file_list)
     
     data_size = 0
