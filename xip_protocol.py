@@ -300,13 +300,382 @@ def create_xip(args):
             elif Path(file_to_pack).is_dir():
                 create_xip_recurse(file_to_pack, iobj_parent_set)
         ###
+        
+    def file_dir_pack_std():
+        for file_to_pack in Path(content_path).iterdir(): 
+            if Path(file_to_pack).is_file():
+                # call function for IO packing
+                # elif dir call SO func and then IO func
+                
+                # <InformationObject>
+                iobj =  et.Element('InformationObject')
+                xip_root.append(iobj)
+                
+                # ref
+                iobj_ref =  et.Element('Ref')
+                iobj_uuid = str(uuid.uuid4())
+                iobj_ref.text = iobj_uuid
+                iobj.append(iobj_ref)
+                
+                # title
+                iobj_title =  et.Element('Title')
+                iobj_title.text = Path(file_to_pack).name
+                iobj.append(iobj_title)
+                
+                 # description
+                iobj_desc =  et.Element('Description')
+                iobj_desc.text = args.iodescription
+                iobj.append(iobj_desc)
+                
+                # security
+                iobj_sec =  et.Element('SecurityTag')
+                iobj_sec.text = args.securitytag
+                iobj.append(iobj_sec)
+                
+                # Parent
+                iobj_par =  et.Element('Parent')
+                iobj_par.text = iobj_parent_set
+                iobj.append(iobj_par)
+                
+                
+                ##
+                # Representation
+                representation =  et.Element('Representation')
+                xip_root.append(representation) 
+                
+                # io
+                rep_iobj =  et.Element('InformationObject')
+                rep_iobj.text = iobj_uuid
+                representation.append(rep_iobj)
+                
+                #name
+                rep_name =  et.Element('Name')
+                rep_name.text = 'Preservation-1'
+                representation.append(rep_name)
+                
+                #type
+                rep_type =  et.Element('Type')
+                rep_type.text = 'Preservation'
+                representation.append(rep_type)
+                
+                
+                #cos
+                rep_cobjs =  et.Element('ContentObjects')
+                representation.append(rep_cobjs)
+                
+                #co
+                rep_cobj =  et.Element('ContentObject')
+                cobj_uuid = str(uuid.uuid4())
+                rep_cobj.text = cobj_uuid
+                rep_cobjs.append(rep_cobj)
+                
+                ##
+                # Content Object
+                cobj =  et.Element('ContentObject')
+                xip_root.append(cobj) 
+                
+                #ref
+                cobj_ref = et.Element('Ref')
+                cobj_ref.text = cobj_uuid
+                cobj.append(cobj_ref)
+                
+                #title
+                cobj_title = et.Element('Title')
+                cobj_title.text = Path(file_to_pack).name
+                cobj.append(cobj_title)
+                
+                #security
+                cobj_sec = et.Element('SecurityTag')
+                cobj_sec.text = args.securitytag
+                cobj.append(cobj_sec)
+                
+                
+                #parent
+                cobj_par = et.Element('Parent')
+                cobj_par.text = iobj_uuid
+                cobj.append(cobj_par)
+                
+                
+                ##
+                # Generation
+                gen =  et.Element('Generation')
+                gen.attrib  = {'original' : "true", 'active' : "true"}
+                xip_root.append(gen) 
+                
+                #co
+                gen_cobj = et.Element('ContentObject')
+                gen_cobj.text = cobj_uuid
+                gen.append(gen_cobj)
+                
+                #effectivedate
+                gen_effect_d = et.Element('EffectiveDate')
+                gen_effect_d.text = str(datetime.datetime.now().isoformat(timespec='microseconds'))
+                gen.append(gen_effect_d)
+                
+                # bitstreams
+                gen_bss = et.Element('Bitstreams')
+                gen.append(gen_bss)
+                
+                #bitstream
+                gen_bs = et.Element('Bitstream')
+                gen_bs.text = Path(file_to_pack).name
+                gen_bss.append(gen_bs)
 
+                ##
+                # Bitstream
+                bit_stream =  et.Element('Bitstream')
+                xip_root.append(bit_stream)
+                
+                #filename
+                bs_file = et.Element('Filename')
+                bs_file.text = Path(file_to_pack).name
+                bit_stream.append(bs_file)
+                        
+                #filesize
+                bs_size = et.Element('FileSize')
+                bs_size_get = str(Path(file_to_pack).stat().st_size)
+                bs_size.text = bs_size_get
+                bit_stream.append(bs_size)
+                
+                #physicallocation
+                bs_pl =  et.Element('PhysicalLocation')
+                #bs_pl.text = Path(file_to_pack).name
+                bit_stream.append(bs_pl)
+                
+                #fixities
+                bs_fixities =  et.Element('Fixities')
+                bit_stream.append(bs_fixities)
+                
+                #fixity
+                bs_fixity =  et.Element('Fixity')
+                bs_fixities.append(bs_fixity)
+                
+                # fixity
+                hash_out, hash_algo = get_checksum(file_to_pack, args)
+                
+                ##fixitiy ALgo
+                bs_fixity_algo =  et.Element('FixityAlgorithmRef')
+                bs_fixity_algo.text = hash_algo
+                bs_fixity.append(bs_fixity_algo)
+                
+                ##fixixty val
+                bs_fixity_val =  et.Element('FixityValue')
+                bs_checksum = hash_out
+                bs_fixity_val.text = bs_checksum
+                bs_fixity.append(bs_fixity_val)
+                
+                '''
+                 ## IO handle parentless
+                if iobj_parent_set == None:
+                    print('parentless')
+                    md_virt = parentless(iobj_uuid)
+                    xip_root.append(md_virt)
+                '''
+                ## check for embedding metadata at IO level
+                if args.iometadata:
+                    meta_entity = iobj_uuid
+                    md_embed_iobj = embed_metadata(args.iometadata, meta_entity)
+                    xip_root.append(md_embed_iobj)
+                    
+                       # check of creting identifier at so level
+                if args.ioidtype:
+                    id_entity = iobj_uuid
+                    id_iobj = gen_id(args, id_entity, 'io')
+                    xip_root.append(id_iobj)
+                    
+            elif Path(file_to_pack).is_dir():
+                create_xip_recurse(file_to_pack, iobj_parent_set)
+                
+    def file_mult_single_asset_pack():
+        # call function for IO packing
+        # <InformationObject>
+        iobj =  et.Element('InformationObject')
+        xip_root.append(iobj)
+                
+        # ref
+        iobj_ref =  et.Element('Ref')
+        iobj_uuid = str(uuid.uuid4())
+        iobj_ref.text = iobj_uuid
+        iobj.append(iobj_ref)
+                
+        # title
+        iobj_title =  et.Element('Title')
+        # TODO name after first file
+        #iobj_title.text = Path(file_to_pack).name 
+        iobj_title.text = args.iotitle
+        iobj.append(iobj_title)
+        
+         # description
+        iobj_desc =  et.Element('Description')
+        iobj_desc.text = args.iodescription
+        iobj.append(iobj_desc)
+        
+        # security
+        iobj_sec =  et.Element('SecurityTag')
+        iobj_sec.text = args.securitytag
+        iobj.append(iobj_sec)
+        
+        # Parent
+        iobj_par =  et.Element('Parent')
+        iobj_par.text = iobj_parent_set
+        iobj.append(iobj_par)
+        
+        
+        ##
+        # Representation
+        representation =  et.Element('Representation')
+        xip_root.append(representation) 
+        
+        # io
+        rep_iobj =  et.Element('InformationObject')
+        rep_iobj.text = iobj_uuid
+        representation.append(rep_iobj)
+        
+        #name
+        rep_name =  et.Element('Name')
+        rep_name.text = 'Preservation-1'
+        representation.append(rep_name)
+        
+        #type
+        rep_type =  et.Element('Type')
+        rep_type.text = 'Preservation'
+        representation.append(rep_type)
+        
+        
+        #cos
+        rep_cobjs =  et.Element('ContentObjects')
+        representation.append(rep_cobjs)
+                
+                
+        for file_to_pack in Path(content_path).iterdir(): 
+            if Path(file_to_pack).is_file():
+                
+                #co
+                rep_cobj =  et.Element('ContentObject')
+                cobj_uuid = str(uuid.uuid4())
+                rep_cobj.text = cobj_uuid
+                rep_cobjs.append(rep_cobj)
+                
+                ##
+                # Content Object
+                cobj =  et.Element('ContentObject')
+                xip_root.append(cobj) 
+                
+                #ref
+                cobj_ref = et.Element('Ref')
+                cobj_ref.text = cobj_uuid
+                cobj.append(cobj_ref)
+                
+                #title
+                cobj_title = et.Element('Title')
+                cobj_title.text = Path(file_to_pack).name
+                cobj.append(cobj_title)
+                
+                #security
+                cobj_sec = et.Element('SecurityTag')
+                cobj_sec.text = args.securitytag
+                cobj.append(cobj_sec)
+                
+                
+                #parent
+                cobj_par = et.Element('Parent')
+                cobj_par.text = iobj_uuid
+                cobj.append(cobj_par)
+                
+                
+                ##
+                # Generation
+                gen =  et.Element('Generation')
+                gen.attrib  = {'original' : "true", 'active' : "true"}
+                xip_root.append(gen) 
+                
+                #co
+                gen_cobj = et.Element('ContentObject')
+                gen_cobj.text = cobj_uuid
+                gen.append(gen_cobj)
+                
+                #effectivedate
+                gen_effect_d = et.Element('EffectiveDate')
+                gen_effect_d.text = str(datetime.datetime.now().isoformat(timespec='microseconds'))
+                gen.append(gen_effect_d)
+                
+                # bitstreams
+                gen_bss = et.Element('Bitstreams')
+                gen.append(gen_bss)
+                
+                #bitstream
+                gen_bs = et.Element('Bitstream')
+                gen_bs.text = Path(file_to_pack).name
+                gen_bss.append(gen_bs)
 
-
-
-
-
-
+                ##
+                # Bitstream
+                bit_stream =  et.Element('Bitstream')
+                xip_root.append(bit_stream)
+                
+                #filename
+                bs_file = et.Element('Filename')
+                bs_file.text = Path(file_to_pack).name
+                bit_stream.append(bs_file)
+                        
+                #filesize
+                bs_size = et.Element('FileSize')
+                bs_size_get = str(Path(file_to_pack).stat().st_size)
+                bs_size.text = bs_size_get
+                bit_stream.append(bs_size)
+                
+                #physicallocation
+                bs_pl =  et.Element('PhysicalLocation')
+                #bs_pl.text = Path(file_to_pack).name
+                bit_stream.append(bs_pl)
+                
+                #fixities
+                bs_fixities =  et.Element('Fixities')
+                bit_stream.append(bs_fixities)
+                
+                #fixity
+                bs_fixity =  et.Element('Fixity')
+                bs_fixities.append(bs_fixity)
+                
+                # fixity
+                hash_out, hash_algo = get_checksum(file_to_pack, args)
+                
+                ##fixitiy ALgo
+                bs_fixity_algo =  et.Element('FixityAlgorithmRef')
+                bs_fixity_algo.text = hash_algo
+                bs_fixity.append(bs_fixity_algo)
+                
+                ##fixixty val
+                bs_fixity_val =  et.Element('FixityValue')
+                bs_checksum = hash_out
+                bs_fixity_val.text = bs_checksum
+                bs_fixity.append(bs_fixity_val)
+                
+                '''
+                 ## IO handle parentless
+                if iobj_parent_set == None:
+                    print('parentless')
+                    md_virt = parentless(iobj_uuid)
+                    xip_root.append(md_virt)
+                '''
+                
+                    
+            elif Path(file_to_pack).is_dir():
+                print('ERROR - Directory found, input for single asset objects must be files only')
+        
+        ## check for embedding metadata at IO level
+        if args.iometadata:
+            meta_entity = iobj_uuid
+            md_embed_iobj = embed_metadata(args.iometadata, meta_entity)
+            xip_root.append(md_embed_iobj)
+            
+               # check of creting identifier at so level
+        if args.ioidtype:
+            id_entity = iobj_uuid
+            id_iobj = gen_id(args, id_entity, 'io')
+            xip_root.append(id_iobj)
+            
+                    
     content_path = args.input
     xip_root = et.Element('XIP')
     #et.register_namespace('XIP','http://preservica.com/XIP/v6.2')
@@ -316,11 +685,21 @@ def create_xip(args):
     if args.assetonly:
         sobj_uuid = None
         
-        if args.parent == None:
-            print('ERROR : Parent must be provided for assest only ingests')   
+        if args.parent == 'None':
+            print('ERROR : Parent must be provided for asset only ingests')   
             exit()
         iobj_parent_set = args.parent
-      
+        file_dir_pack_std()
+    elif args.singleasset:
+        sobj_uuid = None
+        
+        if args.parent == 'None':
+            print('ERROR : Parent must be provided for multi-file, single asset, ingests')   
+            exit()
+        iobj_parent_set = args.parent
+        # branch to seperate
+        file_mult_single_asset_pack()
+        
     else:
         
         # <StructuralObject>
@@ -359,190 +738,9 @@ def create_xip(args):
         
 
         iobj_parent_set = sobj_uuid
-
-    for file_to_pack in Path(content_path).iterdir(): 
-        if Path(file_to_pack).is_file():
-            # call function for IO packing
-            # elif dir call SO func and then IO func
-            
-            # <InformationObject>
-            iobj =  et.Element('InformationObject')
-            xip_root.append(iobj)
-            
-            # ref
-            iobj_ref =  et.Element('Ref')
-            iobj_uuid = str(uuid.uuid4())
-            iobj_ref.text = iobj_uuid
-            iobj.append(iobj_ref)
-            
-            # title
-            iobj_title =  et.Element('Title')
-            iobj_title.text = Path(file_to_pack).name
-            iobj.append(iobj_title)
-            
-             # description
-            iobj_desc =  et.Element('Description')
-            iobj_desc.text = args.iodescription
-            iobj.append(iobj_desc)
-            
-            # security
-            iobj_sec =  et.Element('SecurityTag')
-            iobj_sec.text = args.securitytag
-            iobj.append(iobj_sec)
-            
-            # Parent
-            iobj_par =  et.Element('Parent')
-            iobj_par.text = iobj_parent_set
-            iobj.append(iobj_par)
-            
-            
-            ##
-            # Representation
-            representation =  et.Element('Representation')
-            xip_root.append(representation) 
-            
-            # io
-            rep_iobj =  et.Element('InformationObject')
-            rep_iobj.text = iobj_uuid
-            representation.append(rep_iobj)
-            
-            #name
-            rep_name =  et.Element('Name')
-            rep_name.text = 'Preservation-1'
-            representation.append(rep_name)
-            
-            #type
-            rep_type =  et.Element('Type')
-            rep_type.text = 'Preservation'
-            representation.append(rep_type)
-            
-            
-            #cos
-            rep_cobjs =  et.Element('ContentObjects')
-            representation.append(rep_cobjs)
-            
-            #co
-            rep_cobj =  et.Element('ContentObject')
-            cobj_uuid = str(uuid.uuid4())
-            rep_cobj.text = cobj_uuid
-            rep_cobjs.append(rep_cobj)
-            
-            ##
-            # Content Object
-            cobj =  et.Element('ContentObject')
-            xip_root.append(cobj) 
-            
-            #ref
-            cobj_ref = et.Element('Ref')
-            cobj_ref.text = cobj_uuid
-            cobj.append(cobj_ref)
-            
-            #title
-            cobj_title = et.Element('Title')
-            cobj_title.text = Path(file_to_pack).name
-            cobj.append(cobj_title)
-            
-            #security
-            cobj_sec = et.Element('SecurityTag')
-            cobj_sec.text = args.securitytag
-            cobj.append(cobj_sec)
-            
-            
-            #parent
-            cobj_par = et.Element('Parent')
-            cobj_par.text = iobj_uuid
-            cobj.append(cobj_par)
-            
-            
-            ##
-            # Generation
-            gen =  et.Element('Generation')
-            gen.attrib  = {'original' : "true", 'active' : "true"}
-            xip_root.append(gen) 
-            
-            #co
-            gen_cobj = et.Element('ContentObject')
-            gen_cobj.text = cobj_uuid
-            gen.append(gen_cobj)
-            
-            #effectivedate
-            gen_effect_d = et.Element('EffectiveDate')
-            gen_effect_d.text = str(datetime.datetime.now().isoformat(timespec='microseconds'))
-            gen.append(gen_effect_d)
-            
-            # bitstreams
-            gen_bss = et.Element('Bitstreams')
-            gen.append(gen_bss)
-            
-            #bitstream
-            gen_bs = et.Element('Bitstream')
-            gen_bs.text = Path(file_to_pack).name
-            gen_bss.append(gen_bs)
-
-            ##
-            # Bitstream
-            bit_stream =  et.Element('Bitstream')
-            xip_root.append(bit_stream)
-            
-            #filename
-            bs_file = et.Element('Filename')
-            bs_file.text = Path(file_to_pack).name
-            bit_stream.append(bs_file)
-                    
-            #filesize
-            bs_size = et.Element('FileSize')
-            bs_size_get = str(Path(file_to_pack).stat().st_size)
-            bs_size.text = bs_size_get
-            bit_stream.append(bs_size)
-            
-            #physicallocation
-            bs_pl =  et.Element('PhysicalLocation')
-            #bs_pl.text = Path(file_to_pack).name
-            bit_stream.append(bs_pl)
-            
-            #fixities
-            bs_fixities =  et.Element('Fixities')
-            bit_stream.append(bs_fixities)
-            
-            #fixity
-            bs_fixity =  et.Element('Fixity')
-            bs_fixities.append(bs_fixity)
-            
-            # fixity
-            hash_out, hash_algo = get_checksum(file_to_pack, args)
-            
-            ##fixitiy ALgo
-            bs_fixity_algo =  et.Element('FixityAlgorithmRef')
-            bs_fixity_algo.text = hash_algo
-            bs_fixity.append(bs_fixity_algo)
-            
-            ##fixixty val
-            bs_fixity_val =  et.Element('FixityValue')
-            bs_checksum = hash_out
-            bs_fixity_val.text = bs_checksum
-            bs_fixity.append(bs_fixity_val)
-            
-            '''
-             ## IO handle parentless
-            if iobj_parent_set == None:
-                print('parentless')
-                md_virt = parentless(iobj_uuid)
-                xip_root.append(md_virt)
-            '''
-            ## check for embedding metadata at IO level
-            if args.iometadata:
-                meta_entity = iobj_uuid
-                md_embed_iobj = embed_metadata(args.iometadata, meta_entity)
-                xip_root.append(md_embed_iobj)
-                
-                   # check of creting identifier at so level
-            if args.ioidtype:
-                id_entity = iobj_uuid
-                id_iobj = gen_id(args, id_entity, 'io')
-                xip_root.append(id_iobj)
-                
-        elif Path(file_to_pack).is_dir():
-            create_xip_recurse(file_to_pack, iobj_parent_set)
+        file_dir_pack_std()
+        
+    
         
     
     ## SO handle parentless
@@ -565,21 +763,6 @@ def create_xip(args):
         
         
     if args.aspace:
-        
-        ## handling parentless AO sync type
-        try:
-            sobj_par
-        except NameError:
-            AO_TEMP_PAR = '60d30830c93b' # rand temp value 
-            # Parent
-            sobj_par =  et.Element('Parent')
-            sobj_par.text = AO_TEMP_PAR
-            sobj.append(sobj_par)
-        else:
-            pass
-          
-        
-        
         print('aspace AO ref: ', args.aspace)
         # TODO test with asset only
 
@@ -925,10 +1108,11 @@ if __name__ == "__main__":
     parser.add_argument("-input", "-i", "--input", help='Directory containing content files')
     parser.add_argument("-output", "-o", "--output", help='Directory to export the SIP to')
     parser.add_argument("-sotitle", "-sot", "--sotitle", default=0, help='Title for structural object')
-    parser.add_argument("-parent", "-p", "--parent", default=None, help='Parent or destination reference')
+    parser.add_argument("-parent", "-p", "--parent", default='None', help='Parent or destination reference')
     parser.add_argument("-securitytag", "-s", "--securitytag", default=default_security_tag, help='Security tag for objects in sip')
     parser.add_argument("-assetonly", "-a", "--assetonly", action='store_true', help='Ingest files as assets (no folder) each file will be an asset, -parent uuid required')
     parser.add_argument("-singleasset", "-sa", "--singleasset", action='store_true', help='Ingest multiple files as single asset, -parent uuid required')
+    parser.add_argument("-iotitle", "-iot", "--iotitle", default=0, help='Title for IO, Asset')
     parser.add_argument("-export", "-e", "--export", action='store_true', help='Export files to content subdirectory of sip')
     parser.add_argument("-aspace", "-ao", "--aspace", help='ArchivesSpace archival object reference: archival_object_5555555')
     parser.add_argument("-sodescription", "-sod", "--sodescription", help='Description field for Structural Objects')

@@ -18,6 +18,7 @@ echo 'test_03'
 python3 ../xip_protocol.py -i content/content_01_a -o ../sips/sips_out/ -e -ao archival_object_55555
 
 
+:''
 
 
 #date
