@@ -565,6 +565,21 @@ def create_xip(args):
         
         
     if args.aspace:
+        
+        ## handling parentless AO sync type
+        try:
+            sobj_par
+        except NameError:
+            AO_TEMP_PAR = '60d30830c93b' # rand temp value 
+            # Parent
+            sobj_par =  et.Element('Parent')
+            sobj_par.text = AO_TEMP_PAR
+            sobj.append(sobj_par)
+        else:
+            pass
+          
+        
+        
         print('aspace AO ref: ', args.aspace)
         # TODO test with asset only
 
@@ -912,7 +927,8 @@ if __name__ == "__main__":
     parser.add_argument("-sotitle", "-sot", "--sotitle", default=0, help='Title for structural object')
     parser.add_argument("-parent", "-p", "--parent", default=None, help='Parent or destination reference')
     parser.add_argument("-securitytag", "-s", "--securitytag", default=default_security_tag, help='Security tag for objects in sip')
-    parser.add_argument("-assetonly", "-a", "--assetonly", action='store_true', help='Ingest files as assets (no folder)')
+    parser.add_argument("-assetonly", "-a", "--assetonly", action='store_true', help='Ingest files as assets (no folder) each file will be an asset, -parent uuid required')
+    parser.add_argument("-singleasset", "-sa", "--singleasset", action='store_true', help='Ingest multiple files as single asset, -parent uuid required')
     parser.add_argument("-export", "-e", "--export", action='store_true', help='Export files to content subdirectory of sip')
     parser.add_argument("-aspace", "-ao", "--aspace", help='ArchivesSpace archival object reference: archival_object_5555555')
     parser.add_argument("-sodescription", "-sod", "--sodescription", help='Description field for Structural Objects')
