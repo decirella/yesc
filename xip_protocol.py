@@ -10,6 +10,7 @@ __author__ = "David Cirella"
 __version__ = "0.1.3"
 __license__ = "MIT"
 
+import os
 import sys
 import shutil
 import argparse
@@ -83,6 +84,7 @@ def create_protocol(content_path):
     
     
     write_out(protocol_root, sips_out_path + localAIPstr + '.protocol') 
+    reporting_std_out(localAIPstr, file_count, data_size)
     
 def create_xip(args):
     ###    
@@ -117,7 +119,7 @@ def create_xip(args):
         sobj_par =  et.Element('Parent')
         sobj_par.text = parent_set
         sobj.append(sobj_par)
-    
+        print(sobj_par.text, ' sobj_par.text')
     
 
         iobj_parent_set = sobj_uuid
@@ -322,6 +324,7 @@ def create_xip(args):
     else:
         
         # <StructuralObject>
+        # move to outside of recursive funct
         sobj =  et.Element('StructuralObject')
         xip_root.append(sobj)
             
@@ -875,21 +878,26 @@ def data_stats(data_path):
     for f in file_list:
         data_size += Path(f).stat().st_size
     
-    # stdout reporting
-    print(' ')
-    print('Files to be packaged: ', file_count)    
-    print('Total size: ', data_size, 'bytes')
+    
     
     return file_count, data_size
     
 
+def reporting_std_out(localAIPstr, file_count, data_size):
+    
+    print('uuid', localAIPstr)
+    print('Files to be packaged: ', file_count)    
+    print('Total size: ', data_size, 'bytes')
+
+
 def main(args):
     global sips_out_path 
     """ Main entry point of the app """
-    #print(args.input)
-    sips_out_path = (args.output)
-   
-    create_protocol(args.input)
+    sips_out_path = os.path.join(args.output, '')
+    
+    data_in_path = os.path.join(args.input, '')
+    
+    create_protocol(data_in_path)
     create_xip(args)
 
 if __name__ == "__main__":
@@ -942,3 +950,4 @@ if __name__ == "__main__":
 # debug
 args = parser.parse_args()
 main(args)
+

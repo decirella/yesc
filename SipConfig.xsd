@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ (c) Copyright 2015 Tessella.com
+  ~ All rights reserved.
+  ~
+  ~ Project: 5122/SDB
+  ~ SDB4
+  ~
+  ~ Developed By:
+  ~ Tessella Support Services
+  ~ 26 The Quadrant
+  ~ Abingdon Science Park
+  ~ Abingdon
+  ~ OX14 3YS
+  ~
+  ~ email:  info@tessella.com
+  ~ web:    www.tessella.com
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="http://www.preservica.com/xipbuilder/sipconfig/v1"
+           xmlns:scf="http://www.preservica.com/xipbuilder/sipconfig/v1"
+           targetNamespace="http://www.preservica.com/xipbuilder/sipconfig/v1"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xs:element name="SipConfig">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ManifestationConfig" type="scf:manifestationConfig" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="manifestationConfig">
+        <xs:sequence>
+            <xs:element name="FolderPrefix" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="TypeRef" type="xs:long" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
