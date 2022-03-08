@@ -4,11 +4,11 @@ Create .protocol file for Presrevica ingest
 """
 
 
-# python3 xip_protocol.py -input ./sips/test_file/ -o ./sips/ 
+# python3 yesc.py -input ./sips/test_file/ -o ./sips/ 
 
 __author__ = "David Cirella"
-__version__ = "0.1.3"
-__license__ = "MIT"
+__version__ = "multi-rep branch 0.1.3"
+__license__ = ""
 
 import os
 import sys
