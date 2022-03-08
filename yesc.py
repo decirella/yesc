@@ -675,16 +675,18 @@ def create_xip(args):
             id_iobj = gen_id(args, id_entity, 'io')
             xip_root.append(id_iobj)
             
-                    
+    
+    ## entry point of function                
     content_path = args.input
+    
+    ## create XIP root element
     xip_root = et.Element('XIP')
     #et.register_namespace('XIP','http://preservica.com/XIP/v6.2')
     xip_root.attrib = {'xmlns':"http://preservica.com/XIP/v6.2"}
           
-    
+    ## main branching for different package types
     if args.assetonly:
         sobj_uuid = None
-        
         if args.parent == 'None':
             print('ERROR : Parent must be provided for asset only ingests')   
             exit()
@@ -692,17 +694,35 @@ def create_xip(args):
         file_dir_pack_std()
     elif args.singleasset:
         sobj_uuid = None
-        
         if args.parent == 'None':
             print('ERROR : Parent must be provided for multi-file, single asset, ingests')   
             exit()
         iobj_parent_set = args.parent
-        # branch to seperate
         file_mult_single_asset_pack()
     # add multi-representation handling:
-        
+    elif args.representations:
+        print('reps call')
+        if args.sipconfig:
+            # call func with sipconfig
+            # proc sipconfig for paths
+            # return paths
+            # call create func
+            print('sipconfig call')
+            sipconfig_paths(args.sipconfig)
+            
+            ### DEV EXIT ###
+            exit()
+        else:
+            # call check dirs
+            # return paths
+            # call create func
+            print('standard mutl-rep')
+            check_multi_rep(args.input)
+            
+            ### DEV EXIT ###
+            exit()
+            
     else:
-        
         # <StructuralObject>
         # move to outside of recursive funct
         sobj =  et.Element('StructuralObject')
@@ -736,8 +756,6 @@ def create_xip(args):
             sobj_par.text = args.parent
             sobj.append(sobj_par)
         
-        
-
         iobj_parent_set = sobj_uuid
         file_dir_pack_std()
         
@@ -915,6 +933,23 @@ def create_xip(args):
     
     #print(validate_xml(xip_out_path, './XIP-V6.xsd')) 
 
+
+def check_multi_rep(package_root_path):
+    for package_item in Path(package_root_path).iterdir():
+        if Path(package_item).is_file():
+            print('Error - only directories corresponding to representations may be present')
+        elif Path(package_item).is_dir():
+            print(package_item)
+            
+    #return rep_paths
+
+# 
+def sipconfig_paths(sipconfig_path):
+    # validate sipconfig file
+    # translate v4 to v6 terms
+    print(sipconfig_path)
+    
+    #return rep_paths
 
 def get_checksum(bs_file, args):
     if args.md5:
@@ -1128,6 +1163,8 @@ if __name__ == "__main__":
     parser.add_argument("-soidtype", "-soidt", "--soidtype", help='Identifier type for all SO')
     parser.add_argument("-soidvalue", "-soidv", "--soidvalue", help='Identifier value for all SO')
 
+    parser.add_argument("-representations", "-manifestations", "-r", "--representations", action='store_true', help='Structure should follow the multiple manifestation package definition with manifestation folders of the form *preservica_(presentation| preservation')
+    parser.add_argument("-sipconfig", "-sc", "--sipconfig", help='Location of sip config')
 
     parser.add_argument("-md5", "--md5", action='store_true', help='fixity values will  be generated using the MD5 algorithm')
     parser.add_argument("-sha1", "--sha1", action='store_true', help='fixity values will be generated using the SHA1 algorithm')
