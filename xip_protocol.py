@@ -699,6 +699,7 @@ def create_xip(args):
         iobj_parent_set = args.parent
         # branch to seperate
         file_mult_single_asset_pack()
+    # add multi-representation handling:
         
     else:
         
