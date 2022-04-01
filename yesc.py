@@ -1215,20 +1215,21 @@ def embed_metadata(meta_file_embed, meta_entity):
     #get namespace and parse for uri
     doc_in_ns = doc_in_tree.getroot().tag
     
-    def xmlns_normalize(name):
-        if name[0] == "{":
-            uri, tag = name[1:].split("}")
-            return uri, tag
-        else:
-            return name
+    if doc_in_ns[0] == "{":
+        uri, tag = doc_in_ns[1:].split("}")
+        et.register_namespace(tag, uri)
+    else:
+        uri = False 
+        print(uri)
     
-    doc_ns_uri, doc_ns_name = xmlns_normalize(doc_in_ns)
-    
-    #print(doc_ns_uri)
-    et.register_namespace(doc_ns_name , doc_ns_uri)
     # create elements
+    
     md_embed_sobj =  et.Element('Metadata')   
-    md_embed_sobj.attrib  = {'schemaUri' : doc_ns_uri}
+    if uri:
+        md_embed_sobj.attrib  = {'schemaUri' : uri}
+    # handle empty schema element
+    else:
+        md_embed_sobj.attrib  = {'schemaUri' : 'http://www.w3.org/2001/XMLSchema'}
     
     # ref
     md_embed_sobj_ref =  et.Element('Ref')
