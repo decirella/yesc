@@ -674,7 +674,194 @@ def create_xip(args):
             id_entity = iobj_uuid
             id_iobj = gen_id(args, id_entity, 'io')
             xip_root.append(id_iobj)
+ 
+    def mult_reps_pack(package_reps):
+    
+        # call function for IO packing
+        # <InformationObject>
+        iobj =  et.Element('InformationObject')
+        xip_root.append(iobj)
+                
+        # ref
+        iobj_ref =  et.Element('Ref')
+        iobj_uuid = str(uuid.uuid4())
+        iobj_ref.text = iobj_uuid
+        iobj.append(iobj_ref)
+                
+        # title
+        iobj_title =  et.Element('Title')
+        # TODO name after first file
+        #iobj_title.text = Path(file_to_pack).name 
+        iobj_title.text = args.iotitle
+        iobj.append(iobj_title)
+        
+         # description
+        iobj_desc =  et.Element('Description')
+        iobj_desc.text = args.iodescription
+        iobj.append(iobj_desc)
+        
+        # security
+        iobj_sec =  et.Element('SecurityTag')
+        iobj_sec.text = args.securitytag
+        iobj.append(iobj_sec)
+        
+        # Parent
+        iobj_par =  et.Element('Parent')
+        iobj_par.text = iobj_parent_set
+        iobj.append(iobj_par)
+        
+        ### multi rep handling
+            # dict items have tuple with (path string, type, name)
+
+        for key, value in package_reps.items(): 
+            print(key)
+            rep_dir_path = value[0]
+            rep_dir_type = value[1]
+            rep_dir_name = value[2]
             
+   
+            # Representation
+            representation =  et.Element('Representation')
+            xip_root.append(representation) 
+            
+            # io
+            rep_iobj =  et.Element('InformationObject')
+            rep_iobj.text = iobj_uuid
+            representation.append(rep_iobj)
+            
+            #name
+            rep_name =  et.Element('Name')
+            rep_name.text = rep_dir_name
+            representation.append(rep_name)
+            
+            #type
+            rep_type =  et.Element('Type')
+            rep_type.text = rep_dir_type
+            representation.append(rep_type)
+            
+            
+            #cos
+            rep_cobjs =  et.Element('ContentObjects')
+            representation.append(rep_cobjs)
+                    
+                    
+            for file_to_pack in Path(rep_dir_path).iterdir(): 
+                if Path(file_to_pack).is_file():
+                    
+                    #co
+                    rep_cobj =  et.Element('ContentObject')
+                    cobj_uuid = str(uuid.uuid4())
+                    rep_cobj.text = cobj_uuid
+                    rep_cobjs.append(rep_cobj)
+                    
+                    ##
+                    # Content Object
+                    cobj =  et.Element('ContentObject')
+                    xip_root.append(cobj) 
+                    
+                    #ref
+                    cobj_ref = et.Element('Ref')
+                    cobj_ref.text = cobj_uuid
+                    cobj.append(cobj_ref)
+                    
+                    #title
+                    cobj_title = et.Element('Title')
+                    cobj_title.text = Path(file_to_pack).name
+                    cobj.append(cobj_title)
+                    
+                    #security
+                    cobj_sec = et.Element('SecurityTag')
+                    cobj_sec.text = args.securitytag
+                    cobj.append(cobj_sec)
+                    
+                    
+                    #parent
+                    cobj_par = et.Element('Parent')
+                    cobj_par.text = iobj_uuid
+                    cobj.append(cobj_par)
+                    
+                    
+                    ##
+                    # Generation
+                    gen =  et.Element('Generation')
+                    gen.attrib  = {'original' : "true", 'active' : "true"}
+                    xip_root.append(gen) 
+                    
+                    #co
+                    gen_cobj = et.Element('ContentObject')
+                    gen_cobj.text = cobj_uuid
+                    gen.append(gen_cobj)
+                    
+                    #effectivedate
+                    gen_effect_d = et.Element('EffectiveDate')
+                    gen_effect_d.text = str(datetime.datetime.now().isoformat(timespec='microseconds'))
+                    gen.append(gen_effect_d)
+                    
+                    # bitstreams
+                    gen_bss = et.Element('Bitstreams')
+                    gen.append(gen_bss)
+                    
+                    #bitstream
+                    gen_bs = et.Element('Bitstream')
+                    gen_bs.text = Path(file_to_pack).name
+                    gen_bss.append(gen_bs)
+
+                    ##
+                    # Bitstream
+                    bit_stream =  et.Element('Bitstream')
+                    xip_root.append(bit_stream)
+                    
+                    #filename
+                    bs_file = et.Element('Filename')
+                    bs_file.text = Path(file_to_pack).name
+                    bit_stream.append(bs_file)
+                            
+                    #filesize
+                    bs_size = et.Element('FileSize')
+                    bs_size_get = str(Path(file_to_pack).stat().st_size)
+                    bs_size.text = bs_size_get
+                    bit_stream.append(bs_size)
+                    
+                    #physicallocation
+                    bs_pl =  et.Element('PhysicalLocation')
+                    #bs_pl.text = Path(file_to_pack).name
+                    bit_stream.append(bs_pl)
+                    
+                    #fixities
+                    bs_fixities =  et.Element('Fixities')
+                    bit_stream.append(bs_fixities)
+                    
+                    #fixity
+                    bs_fixity =  et.Element('Fixity')
+                    bs_fixities.append(bs_fixity)
+                    
+                    # fixity
+                    hash_out, hash_algo = get_checksum(file_to_pack, args)
+                    
+                    ##fixitiy ALgo
+                    bs_fixity_algo =  et.Element('FixityAlgorithmRef')
+                    bs_fixity_algo.text = hash_algo
+                    bs_fixity.append(bs_fixity_algo)
+                    
+                    ##fixixty val
+                    bs_fixity_val =  et.Element('FixityValue')
+                    bs_checksum = hash_out
+                    bs_fixity_val.text = bs_checksum
+                    bs_fixity.append(bs_fixity_val)
+                    
+                    
+                    # ## IO handle parentless
+                    #if iobj_parent_set == None:
+                    #    print('parentless')
+                    #    md_virt = parentless(iobj_uuid)
+                    #    xip_root.append(md_virt)
+                    
+                
+                    
+                elif Path(file_to_pack).is_dir():
+                    print('ERROR - Directory found, input for multi representation objects must be files only')
+                    
+                    
     
     ## entry point of function                
     content_path = args.input
@@ -701,12 +888,14 @@ def create_xip(args):
         file_mult_single_asset_pack()
     # add multi-representation handling:
     elif args.representations:
+        sobj_uuid = None
         print('reps call')
         if args.sipconfig:
             # call func with sipconfig
             # proc sipconfig for paths
             # return paths
             # call create func
+            iobj_parent_set = args.parent
             print('sipconfig call')
             sipconfig_paths(args.sipconfig)
             
@@ -716,11 +905,12 @@ def create_xip(args):
             # call check dirs
             # return paths
             # call create func
+            iobj_parent_set = args.parent
             print('standard mutl-rep')
-            check_multi_rep(args.input)
+            package_reps = check_multi_rep(args.input)
+            mult_reps_pack(package_reps)
             
-            ### DEV EXIT ###
-            exit()
+            
             
     else:
         # <StructuralObject>
@@ -935,13 +1125,21 @@ def create_xip(args):
 
 
 def check_multi_rep(package_root_path):
+    # dict items have tuple with (path string, type, name)
+    package_reps = {}
     for package_item in Path(package_root_path).iterdir():
         if Path(package_item).is_file():
             print('Error - only directories corresponding to representations may be present')
         elif Path(package_item).is_dir():
             print(package_item)
-            
-    #return rep_paths
+            rep_dir_name = Path(package_item).stem
+            if 'preservation' in rep_dir_name.lower():
+                package_reps[rep_dir_name] = (str(package_item), 'Preservation', rep_dir_name)
+            elif 'presentation' or 'access' in rep_dir_name.lower():
+                package_reps[rep_dir_name] = (str(package_item), 'Access', rep_dir_name)
+            else:
+                print('ERROR - non-standard named directories found')
+    return package_reps
 
 # 
 def sipconfig_paths(sipconfig_path):
