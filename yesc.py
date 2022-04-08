@@ -1105,7 +1105,6 @@ def create_xip(args):
         id_as_sobj.append(id_as_sobj_ent)           
 
     
-    
     Path(sips_out_path + localAIPstr).mkdir()
     xip_out_path = sips_out_path + localAIPstr + '/metadata.xml'  
     write_out(xip_root, xip_out_path)
@@ -1212,24 +1211,35 @@ def embed_metadata(meta_file_embed, meta_entity):
     doc_in_tree = et.parse(meta_file_embed)
     doc_in_root = doc_in_tree.getroot()
     
+
     #get namespace and parse for uri
     doc_in_ns = doc_in_tree.getroot().tag
+    
     
     if doc_in_ns[0] == "{":
         uri, tag = doc_in_ns[1:].split("}")
         et.register_namespace(tag, uri)
+    # add generic schema if none in doc
     else:
-        uri = False 
-        print(uri)
+        uri = 'http://www.w3.org/2001/XMLSchema'
+        tag = doc_in_ns
+        doc_in_root.set('xmlns', uri)
+        et.register_namespace(tag, uri) 
+        
+        
+    ## starttesting
+    '''
+    print("====== START TEST ======")
+    print(doc_in_tree.getroot().tag)
+    print(doc_in_tree.getroot().items)
+    print("====== END TEST ======")
+    '''
+    ## endtesting
     
     # create elements
     
     md_embed_sobj =  et.Element('Metadata')   
-    if uri:
-        md_embed_sobj.attrib  = {'schemaUri' : uri}
-    # handle empty schema element
-    else:
-        md_embed_sobj.attrib  = {'schemaUri' : 'http://www.w3.org/2001/XMLSchema'}
+    md_embed_sobj.attrib  = {'schemaUri' : uri}
     
     # ref
     md_embed_sobj_ref =  et.Element('Ref')
@@ -1287,8 +1297,19 @@ def parentless(entity_from):
     return md_virt
 
 def write_out(xml_root, file_path):
+    
     et.ElementTree(xml_root).write(file_path, encoding="utf-8", xml_declaration=True)
-
+    
+    ### TEST   
+    '''
+    x = et.tostring(xml_root, encoding='utf8', method='xml')
+    print(x, '===============')
+     
+    my_namespaces = dict([node for _, node in et.iterparse(file_path, events=['start-ns'])])  
+    print(my_namespaces)  
+    '''
+    ### TEST
+        
     return 0
     
 def validate_xml(xml_path: str, xsd_path: str) -> bool:
