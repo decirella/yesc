@@ -897,14 +897,14 @@ def create_xip(args):
             # call create func
             iobj_parent_set = args.parent
             print('sipconfig call')
-            sipconfig_paths(args.sipconfig)
+
+            ### WIP 
+            package_reps = parse_sipconfig(args.sipconfig, args.input)
+            mult_reps_pack(package_reps)
             
-            ### DEV EXIT ###
-            exit()
+            ### WIP END
+                
         else:
-            # call check dirs
-            # return paths
-            # call create func
             iobj_parent_set = args.parent
             print('standard mutl-rep')
             package_reps = check_multi_rep(args.input)
@@ -1140,13 +1140,56 @@ def check_multi_rep(package_root_path):
                 print('ERROR - non-standard named directories found')
     return package_reps
 
-# 
-def sipconfig_paths(sipconfig_path):
+### WIP
+def parse_sipconfig(sipconfig_path, package_root_path):
     # validate sipconfig file
-    # translate v4 to v6 terms
-    print(sipconfig_path)
+   
+    ## check is sipconfig valide
+    sipconfig_schema = './SipConfig.xsd'
+    if validate_xml(sipconfig_path, sipconfig_schema):
+        print('true: ', sipconfig_path)
+    else:
+        print('SipConfig file is invalid, program exiting')
+        exit
+    
+    # read sipconfig
+    # read in xml
+    sipconfig_in = et.parse(sipconfig_path)
+    sipconfig_in_root = sipconfig_in.getroot()
+    
+    
+    print(sipconfig_in_root.tag)
+    
+    #for elem in sipconfig_in_root:
+    #    print(elem.tag, elem.attrib)
+    sc_ns = {'' : 'http://www.preservica.com/xipbuilder/sipconfig/v1'}
+    package_reps = {}
+    
+    for elem in sipconfig_in_root.findall('ManifestationConfig', sc_ns):
+        for childelem in elem:
+            if 'FolderPrefix' in childelem.tag:
+                print(childelem.text)
+                package_item = package_root_path + childelem.text
+                print('package_reps', )
+            elif 'TypeRef' in childelem.tag:
+                print(childelem.text)
+                print('package_reps', )
+                if '1' in childelem.text:
+                    package_reps[childelem.text] = (str(package_item), 'Preservation', childelem.text)
+                elif '2' in childelem.text:
+                    package_reps[childelem.text] = (str(package_item), 'Access', childelem.text)
+    return package_reps
+    
+    #x = et.tostring(sipconfig_in_root, encoding='utf8', method='xml')
+    #print(x, '===============')
+    # assign values to v6 variable
+    package_reps = {}
+    
+   
+    
     
     #return rep_paths
+### WIP END
 
 def get_checksum(bs_file, args):
     if args.md5:
