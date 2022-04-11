@@ -862,6 +862,19 @@ def create_xip(args):
                     print('ERROR - Directory found, input for multi representation objects must be files only')
                     
                     
+                            ## check for embedding metadata at IO level
+        if args.iometadata:
+            meta_entity = iobj_uuid
+            md_embed_iobj = embed_metadata(args.iometadata, meta_entity)
+            xip_root.append(md_embed_iobj)
+            
+               # check of creting identifier at so level
+        if args.ioidtype:
+            id_entity = iobj_uuid
+            id_iobj = gen_id(args, id_entity, 'io')
+            xip_root.append(id_iobj)
+                    
+                    
     
     ## entry point of function                
     content_path = args.input
@@ -1166,18 +1179,19 @@ def parse_sipconfig(sipconfig_path, package_root_path):
     package_reps = {}
     
     for elem in sipconfig_in_root.findall('ManifestationConfig', sc_ns):
+        package_reps_name = ''
         for childelem in elem:
             if 'FolderPrefix' in childelem.tag:
-                print(childelem.text)
+                package_reps_name = childelem.text
                 package_item = package_root_path + childelem.text
                 print('package_reps', )
             elif 'TypeRef' in childelem.tag:
                 print(childelem.text)
                 print('package_reps', )
                 if '1' in childelem.text:
-                    package_reps[childelem.text] = (str(package_item), 'Preservation', childelem.text)
+                    package_reps[package_reps_name] = (str(package_item), 'Preservation', package_reps_name)
                 elif '2' in childelem.text:
-                    package_reps[childelem.text] = (str(package_item), 'Access', childelem.text)
+                    package_reps[package_reps_name] = (str(package_item), 'Access', package_reps_name)
     return package_reps
     
     #x = et.tostring(sipconfig_in_root, encoding='utf8', method='xml')
