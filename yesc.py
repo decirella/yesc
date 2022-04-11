@@ -124,9 +124,9 @@ def create_xip(args):
 
         iobj_parent_set = sobj_uuid
         
-        
+        ## file include WIP
         for file_to_pack in Path(content_path).iterdir():
-            if Path(file_to_pack).is_file():
+            if Path(file_to_pack).is_file() and include_files(Path(file_to_pack).name, args.excludedFileNames):
         
                 # <InformationObject>
                 iobj =  et.Element('InformationObject')
@@ -303,7 +303,7 @@ def create_xip(args):
         
     def file_dir_pack_std():
         for file_to_pack in Path(content_path).iterdir(): 
-            if Path(file_to_pack).is_file():
+            if Path(file_to_pack).is_file() and include_files(Path(file_to_pack).name, args.excludedFileNames):
                 # call function for IO packing
                 # elif dir call SO func and then IO func
                 
@@ -546,9 +546,9 @@ def create_xip(args):
         rep_cobjs =  et.Element('ContentObjects')
         representation.append(rep_cobjs)
                 
-                
+         ### WIP Testing, exlcude at CO level       
         for file_to_pack in Path(content_path).iterdir(): 
-            if Path(file_to_pack).is_file():
+            if Path(file_to_pack).is_file() and include_files(Path(file_to_pack).name, args.excludedFileNames):
                 
                 #co
                 rep_cobj =  et.Element('ContentObject')
@@ -744,9 +744,10 @@ def create_xip(args):
             rep_cobjs =  et.Element('ContentObjects')
             representation.append(rep_cobjs)
                     
-                    
+                     ### WIP Testing, exlcude at CO level       
+        
             for file_to_pack in Path(rep_dir_path).iterdir(): 
-                if Path(file_to_pack).is_file():
+                if Path(file_to_pack).is_file() and include_files(Path(file_to_pack).name, args.excludedFileNames):
                     
                     #co
                     rep_cobj =  et.Element('ContentObject')
@@ -902,28 +903,18 @@ def create_xip(args):
     # add multi-representation handling:
     elif args.representations:
         sobj_uuid = None
-        print('reps call')
         if args.sipconfig:
             # call func with sipconfig
             # proc sipconfig for paths
             # return paths
             # call create func
             iobj_parent_set = args.parent
-            print('sipconfig call')
-
-            ### WIP 
             package_reps = parse_sipconfig(args.sipconfig, args.input)
             mult_reps_pack(package_reps)
-            
-            ### WIP END
-                
         else:
             iobj_parent_set = args.parent
-            print('standard mutl-rep')
             package_reps = check_multi_rep(args.input)
             mult_reps_pack(package_reps)
-            
-            
             
     else:
         # <StructuralObject>
@@ -1127,7 +1118,7 @@ def create_xip(args):
         sip_content = sips_out_path + localAIPstr + '/content'
         Path(sip_content).mkdir()
         for file_to_pack in Path(content_path).rglob("*"): 
-            if Path(file_to_pack).is_file():
+            if Path(file_to_pack).is_file() and include_files(Path(file_to_pack).name, args.excludedFileNames):
                 shutil.copy2(file_to_pack, sip_content)
                 
         
@@ -1153,11 +1144,8 @@ def check_multi_rep(package_root_path):
                 print('ERROR - non-standard named directories found')
     return package_reps
 
-### WIP
 def parse_sipconfig(sipconfig_path, package_root_path):
     # validate sipconfig file
-   
-    ## check is sipconfig valide
     sipconfig_schema = './SipConfig.xsd'
     if validate_xml(sipconfig_path, sipconfig_schema):
         print('true: ', sipconfig_path)
@@ -1170,11 +1158,8 @@ def parse_sipconfig(sipconfig_path, package_root_path):
     sipconfig_in = et.parse(sipconfig_path)
     sipconfig_in_root = sipconfig_in.getroot()
     
-    
-    print(sipconfig_in_root.tag)
-    
     #for elem in sipconfig_in_root:
-    #    print(elem.tag, elem.attrib)
+
     sc_ns = {'' : 'http://www.preservica.com/xipbuilder/sipconfig/v1'}
     package_reps = {}
     
@@ -1194,16 +1179,8 @@ def parse_sipconfig(sipconfig_path, package_root_path):
                     package_reps[package_reps_name] = (str(package_item), 'Access', package_reps_name)
     return package_reps
     
-    #x = et.tostring(sipconfig_in_root, encoding='utf8', method='xml')
-    #print(x, '===============')
-    # assign values to v6 variable
-    package_reps = {}
     
-   
-    
-    
-    #return rep_paths
-### WIP END
+
 
 def get_checksum(bs_file, args):
     if args.md5:
@@ -1400,6 +1377,32 @@ def reporting_std_out(localAIPstr, file_count, data_size):
     print('Files to be packaged: ', file_count)    
     print('Total size: ', data_size, 'bytes')
 
+# parse list of files to exclude, return true if keep, false if exclude 
+def include_files(file_name, list_to_exclude):
+    print(file_name)
+    # if no ef set, this will eval false for empty)
+    if list_to_exclude: 
+        print('check files')
+        #print(list_to_exclude)
+        # split string to list at commams
+        exclude_files = list_to_exclude.split(",")
+
+        #check for match from list to current file
+        if file_name in list_to_exclude:
+            # false to fail file
+            print('excluding : ', file_name)
+            return False
+        else:
+            # true ot include file
+            print('no match : ', file_name)
+            return True
+    else:
+        # true to include file
+        print(list_to_exclude)
+        print('none to check')
+        return True
+    
+
 
 def main(args):
     global sips_out_path 
@@ -1447,6 +1450,8 @@ if __name__ == "__main__":
     parser.add_argument("-sha1", "--sha1", action='store_true', help='fixity values will be generated using the SHA1 algorithm')
     parser.add_argument("-sha256", "--sha256", action='store_true', help='fixity values will be generated using the SHA256 algorithm')
     parser.add_argument("-sha512", "--sha512", action='store_true', help='fixity values will be generated using the SHA512 algorithm')
+    
+    parser.add_argument("-excludedFileNames", "-ef", "--excludedFileNames", default='', help='Comma separated list of file names to  exclude during SIP creation')
     
     
     # TODO
