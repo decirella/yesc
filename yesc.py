@@ -1163,19 +1163,28 @@ def parse_sipconfig(sipconfig_path, package_root_path):
     sc_ns = {'' : 'http://www.preservica.com/xipbuilder/sipconfig/v1'}
     package_reps = {}
     
+    # handle numbering for representation naming
+    pres_reps = 0
+    access_reps = 0
+    
     for elem in sipconfig_in_root.findall('ManifestationConfig', sc_ns):
         package_reps_name = ''
         for childelem in elem:
             if 'FolderPrefix' in childelem.tag:
-                package_reps_name = childelem.text
+                # original functionality for using name from sipconfig
+                #package_reps_name = childelem.text
                 package_item = package_root_path + childelem.text
                 print('package_reps', )
             elif 'TypeRef' in childelem.tag:
-                print(childelem.text)
+                #print(childelem.text)
                 print('package_reps', )
                 if '1' in childelem.text:
+                    pres_reps += 1
+                    package_reps_name = 'Preservation-' + str(pres_reps) 
                     package_reps[package_reps_name] = (str(package_item), 'Preservation', package_reps_name)
                 elif '2' in childelem.text:
+                    access_reps += 1
+                    package_reps_name = 'Access-' + str(access_reps) 
                     package_reps[package_reps_name] = (str(package_item), 'Access', package_reps_name)
     return package_reps
     
@@ -1428,11 +1437,11 @@ if __name__ == "__main__":
     parser.add_argument("-securitytag", "-s", "--securitytag", default=default_security_tag, help='Security tag for objects in sip')
     parser.add_argument("-assetonly", "-a", "--assetonly", action='store_true', help='Ingest files as assets (no folder) each file will be an asset, -parent uuid required')
     parser.add_argument("-singleasset", "-sa", "--singleasset", action='store_true', help='Ingest multiple files as single asset, -parent uuid required')
-    parser.add_argument("-iotitle", "-iot", "--iotitle", default=0, help='Title for IO, Asset')
+    parser.add_argument("-iotitle", "-iot", "--iotitle", default=0, help='Title for IO, Applies in asset only mode')
     parser.add_argument("-export", "-e", "--export", action='store_true', help='Export files to content subdirectory of sip')
     parser.add_argument("-aspace", "-ao", "--aspace", help='ArchivesSpace archival object reference: archival_object_5555555')
     parser.add_argument("-sodescription", "-sod", "--sodescription", help='Description field for Structural Objects')
-    parser.add_argument("-iodescription", "-iod", "--iodescription", help='Description field for all Information Objects')
+    parser.add_argument("-iodescription", "-iod", "--iodescription", help='Description field for all Information Objects, Applies in asset only mode')
     
     parser.add_argument("-sometadata", "-som", "--sometadata", help='Embed content of XML file as metadata linked to SO')
     parser.add_argument("-iometadata", "-iom", "--iometadata", help='Embed content of XML file as metadata linked to IO')
