@@ -1130,16 +1130,23 @@ def create_xip(args):
 def check_multi_rep(package_root_path):
     # dict items have tuple with (path string, type, name)
     package_reps = {}
+    pres_reps = 0
+    access_reps = 0
+    
     for package_item in Path(package_root_path).iterdir():
         if Path(package_item).is_file():
             print('Error - only directories corresponding to representations may be present')
         elif Path(package_item).is_dir():
             print(package_item)
-            rep_dir_name = Path(package_item).stem
+            #rep_dir_name = Path(package_item).stem
             if 'preservation' in rep_dir_name.lower():
-                package_reps[rep_dir_name] = (str(package_item), 'Preservation', rep_dir_name)
+                pres_reps += 1
+                package_reps_name = 'Preservation-' + str(pres_reps)
+                package_reps[rep_dir_name] = (str(package_item), 'Preservation', package_reps_name)
             elif 'presentation' or 'access' in rep_dir_name.lower():
-                package_reps[rep_dir_name] = (str(package_item), 'Access', rep_dir_name)
+                access_reps += 1
+                package_reps_name = 'Access-' + str(access_reps)
+                package_reps[rep_dir_name] = (str(package_item), 'Access', package_reps_name)
             else:
                 print('ERROR - non-standard named directories found')
     return package_reps
