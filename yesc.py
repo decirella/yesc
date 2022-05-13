@@ -1138,7 +1138,7 @@ def check_multi_rep(package_root_path):
             print('Error - only directories corresponding to representations may be present')
         elif Path(package_item).is_dir():
             print(package_item)
-            #rep_dir_name = Path(package_item).stem
+            rep_dir_name = Path(package_item).stem
             if 'preservation' in rep_dir_name.lower():
                 pres_reps += 1
                 package_reps_name = 'Preservation-' + str(pres_reps)
@@ -1459,8 +1459,8 @@ if __name__ == "__main__":
     parser.add_argument("-soidtype", "-soidt", "--soidtype", help='Identifier type for all SO')
     parser.add_argument("-soidvalue", "-soidv", "--soidvalue", help='Identifier value for all SO')
 
-    parser.add_argument("-representations", "-manifestations", "-r", "--representations", action='store_true', help='Structure should follow the multiple manifestation package definition with manifestation folders of the form *preservica_(presentation| preservation')
-    parser.add_argument("-sipconfig", "-sc", "--sipconfig", help='Location of sip config')
+    parser.add_argument("-representations", "-manifestations", "-r", "--representations", action='store_true', help='Structure should follow the multiple manifestation package definition with manifestation folders of the form *preservica_(presentation| preservation, use with -iot options to set IO title')
+    parser.add_argument("-sipconfig", "-sc", "--sipconfig", help='Location of sip config, use with -r representations option')
 
     parser.add_argument("-md5", "--md5", action='store_true', help='fixity values will  be generated using the MD5 algorithm')
     parser.add_argument("-sha1", "--sha1", action='store_true', help='fixity values will be generated using the SHA1 algorithm')
