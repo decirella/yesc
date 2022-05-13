@@ -878,7 +878,7 @@ def create_xip(args):
                     
     
     ## entry point of function                
-    content_path = args.input
+    content_path = os.path.join(args.input, '')
     
     ## create XIP root element
     xip_root = et.Element('XIP')
