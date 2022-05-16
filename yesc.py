@@ -1124,7 +1124,7 @@ def create_xip(args):
         
           
     
-    #print(validate_xml(xip_out_path, './XIP-V6.xsd')) 
+    #print(validate_xml(xip_out_path, './assets/XIP-V6.xsd')) 
 
 
 def check_multi_rep(package_root_path):
@@ -1153,7 +1153,7 @@ def check_multi_rep(package_root_path):
 
 def parse_sipconfig(sipconfig_path, package_root_path):
     # validate sipconfig file
-    sipconfig_schema = './SipConfig.xsd'
+    sipconfig_schema = './assets/SipConfig.xsd'
     if validate_xml(sipconfig_path, sipconfig_schema):
         print('true: ', sipconfig_path)
     else:
