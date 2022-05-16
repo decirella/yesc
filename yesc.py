@@ -7,7 +7,7 @@ Create .protocol file for Presrevica ingest
 # python3 yesc.py -input ./sips/test_file/ -o ./sips/ 
 
 __author__ = "David Cirella"
-__version__ = "multi-rep branch 0.1.3"
+__version__ = "0.1-alpha"
 __license__ = ""
 
 import os

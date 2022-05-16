@@ -1,5 +1,5 @@
 # yesc
-### Yale Easy Sip Creator
+## Yale Easy Sip Creator
 
 `yesc.py` provides a command line interface for create `XIP` version 6 SIPs for ingest to Preservica.
 
@@ -83,7 +83,22 @@ options:
 
 
 
-### Requirements
+## Use
+
+### Python use
+
+### Windows Binary
+Dowload from release page  
+Run from `powershell` :
+
+```PS C:\Users\name> yesc.exe -i input_folder -o output_location -e```
+
+
+### Build Instructions
+Using `pyinstaller` to build on windows  
+
+```pyinstaller.exe --onefile --exclude-module _bootlocale .\yesc.py```
+
 
 
 
