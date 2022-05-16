@@ -1472,8 +1472,8 @@ if __name__ == "__main__":
     
     # TODO
         # CO - embed metadata xml file as metadata element
-
-'''
+        
+        
     try:
         args = parser.parse_args()
         main(args)
@@ -1481,9 +1481,8 @@ if __name__ == "__main__":
         ## message for run with no args
         parser.print_help()
         sys.exit(0)
-'''
 
 # debug
-args = parser.parse_args()
-main(args)
+#args = parser.parse_args()
+#main(args)
 
