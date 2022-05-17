@@ -1,1 +1,4 @@
 sips/
+__pycache__/
+build/
+
