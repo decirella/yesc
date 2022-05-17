@@ -3,6 +3,14 @@
 
 `yesc.py` provides a command line interface for create `XIP` version 6 SIPs for ingest to Preservica.
 
+## Releases
+### Commandline interface
+- [Windows binary](https://github.com/decirella/yesc/releases/tag/0.1-alpha)
+
+### Desktop GUI
+- [Source](https://github.com/decirella/yes_creator)
+- [Windows binary](https://github.com/decirella/yes_creator/releases/tag/0.1-alpha)
+
 
 ```
 $ python3 yesc.py -h
