@@ -676,7 +676,8 @@ def create_xip(args):
             xip_root.append(id_iobj)
  
     def mult_reps_pack(package_reps):
-    
+       
+        
         # call function for IO packing
         # <InformationObject>
         iobj =  et.Element('InformationObject')
@@ -903,6 +904,7 @@ def create_xip(args):
     # add multi-representation handling:
     elif args.representations:
         sobj_uuid = None
+        
         if args.sipconfig:
             # call func with sipconfig
             # proc sipconfig for paths
@@ -983,12 +985,15 @@ def create_xip(args):
         # ASPACE <StructuralObject>
         as_sobj =  et.Element('StructuralObject')
         xip_root.insert(0, as_sobj)
+        
+        
             
         # ref
         as_sobj_ref =  et.Element('Ref')
         as_sobj_uuid = str(uuid.uuid4())
         as_sobj_ref.text = as_sobj_uuid
         as_sobj.append(as_sobj_ref)
+        
             
         # title
         as_sobj_title =  et.Element('Title')
@@ -1005,9 +1010,12 @@ def create_xip(args):
         as_sobj_sec.text = args.securitytag
         as_sobj.append(as_sobj_sec)
         
+        print("executed to here")
+        
         # change out SO parent ref
         sobj_par.text = as_sobj_uuid
         
+        print("executed to here2")
         
         # identifier gp as_sobj
         id_as_gp_sobj =  et.Element('Identifier')
@@ -1106,7 +1114,9 @@ def create_xip(args):
         # entity
         id_as_sobj_ent =  et.Element('Entity')
         id_as_sobj_ent.text = sobj_uuid
-        id_as_sobj.append(id_as_sobj_ent)           
+        id_as_sobj.append(id_as_sobj_ent)
+        
+                   
 
     
     Path(sips_out_path + localAIPstr).mkdir()

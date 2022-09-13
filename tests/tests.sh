@@ -59,6 +59,16 @@ echo 'test_03'
 python3 ../yesc.py -i content/content_01_a -o ../sips/sips_out/ -e -sod 'aspace sync, no parent, minimal package, NO parent' -ao archival_object_55555 
 
 
+
+
+date
+echo 'content_04_a'
+:'multi manifestions'
+python3 ../yesc.py -i content/content_04_a -o ../sips/sips_out/ -e -sod 'multi-representation' -p 5830d793-e6cd-48b0-b9bc-2508a90ada31 -r -s DIGIPRES_CLOSED
+
+
+
+
 :''
 
 
