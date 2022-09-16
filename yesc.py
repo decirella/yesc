@@ -556,6 +556,7 @@ def create_xip(args):
                 rep_cobj.text = cobj_uuid
                 rep_cobjs.append(rep_cobj)
                 
+                
                 ##
                 # Content Object
                 cobj =  et.Element('ContentObject')
@@ -1162,8 +1163,9 @@ def check_multi_rep(package_root_path):
     return package_reps
 
 def parse_sipconfig(sipconfig_path, package_root_path):
-    # validate sipconfig file
-    sipconfig_schema = './assets/SipConfig.xsd'
+    # validate sipconfig file Path(__file__).with_name('file.txt')
+    print(str(Path(__file__)) + '/assets/SipConfig.xsd')
+    sipconfig_schema = (str(Path(__file__).parent) + '/assets/SipConfig.xsd')
     if validate_xml(sipconfig_path, sipconfig_schema):
         print('true: ', sipconfig_path)
     else:
@@ -1191,7 +1193,7 @@ def parse_sipconfig(sipconfig_path, package_root_path):
                 # original functionality for using name from sipconfig
                 #package_reps_name = childelem.text
                 package_item = package_root_path + childelem.text
-                print('package_reps', )
+                print('package_reps', package_item)
             elif 'TypeRef' in childelem.tag:
                 #print(childelem.text)
                 print('package_reps', )
@@ -1483,7 +1485,7 @@ if __name__ == "__main__":
     # TODO
         # CO - embed metadata xml file as metadata element
         
-        
+'''     
     try:
         args = parser.parse_args()
         main(args)
@@ -1491,8 +1493,8 @@ if __name__ == "__main__":
         ## message for run with no args
         parser.print_help()
         sys.exit(0)
-
+'''
 # debug
-#args = parser.parse_args()
-#main(args)
+args = parser.parse_args()
+main(args)
 
