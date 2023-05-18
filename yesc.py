@@ -25,7 +25,7 @@ from pathlib import Path
 
 localAIPstr = ''
 sips_out_path = ''
-
+sip_report = {}
 
 ## user set defaults
 default_security_tag = 'open'
@@ -299,7 +299,7 @@ def create_xip(args):
                     xip_root.append(id_iobj)
             elif Path(file_to_pack).is_dir():
                 create_xip_recurse(file_to_pack, iobj_parent_set)
-        ###
+
         
     def file_dir_pack_std():
         for file_to_pack in Path(content_path).iterdir(): 
@@ -716,7 +716,7 @@ def create_xip(args):
             # dict items have tuple with (path string, type, name)
 
         for key, value in package_reps.items(): 
-            print(key)
+            # print(key)
             rep_dir_path = value[0]
             rep_dir_type = value[1]
             rep_dir_name = value[2]
@@ -934,6 +934,10 @@ def create_xip(args):
         # title
         sobj_title =  et.Element('Title')
         sobj_title.text = args.sotitle or str(Path(content_path).parts[-1])
+        # add prefix to parent SO only
+        if args.prefix:
+            sobj_title.text = args.prefix + ' ' + sobj_title.text
+        print(sobj_title.text)
         sobj.append(sobj_title)
         
         
@@ -1011,12 +1015,12 @@ def create_xip(args):
         as_sobj_sec.text = args.securitytag
         as_sobj.append(as_sobj_sec)
         
-        print("executed to here")
+        #print("executed to here")
         
         # change out SO parent ref
         sobj_par.text = as_sobj_uuid
         
-        print("executed to here2")
+        #print("executed to here2")
         
         # identifier gp as_sobj
         id_as_gp_sobj =  et.Element('Identifier')
@@ -1400,14 +1404,14 @@ def data_stats(data_path):
     
 
 def reporting_std_out(localAIPstr, file_count, data_size):
-    
-    print('uuid', localAIPstr)
-    print('Files to be packaged: ', file_count)    
-    print('Total size: ', data_size, 'bytes')
-
+    global sip_report
+    sip_report = {'uuid' : localAIPstr, 'file_count' : file_count, 'size_bytes' :  data_size}
+    for k, v in sip_report.items():
+        print(k, v)
+ 
 # parse list of files to exclude, return true if keep, false if exclude 
 def include_files(file_name, list_to_exclude):
-    print(file_name)
+    # print(file_name)
     # if no ef set, this will eval false for empty)
     if list_to_exclude: 
         print('check files')
@@ -1426,8 +1430,8 @@ def include_files(file_name, list_to_exclude):
             return True
     else:
         # true to include file
-        print(list_to_exclude)
-        print('none to check')
+        # print(list_to_exclude)
+        # print('none to check')
         return True
     
 
@@ -1441,6 +1445,9 @@ def main(args):
     
     create_protocol(data_in_path)
     create_xip(args)
+    
+    # add opt for sending return for bulk packager
+    return sip_report
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
@@ -1481,6 +1488,7 @@ if __name__ == "__main__":
     
     parser.add_argument("-excludedFileNames", "-ef", "--excludedFileNames", default='', help='Comma separated list of file names to  exclude during SIP creation')
     
+    parser.add_argument("-prefix", "-pf", "--prefix", default='', help='String to prefix SO title with')
     
     # TODO
         # CO - embed metadata xml file as metadata element
