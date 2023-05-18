@@ -64,7 +64,7 @@ python3 ../yesc.py -i content/content_01_a -o ../sips/sips_out/ -e -sod 'aspace 
 date
 echo 'content_04_a'
 :'multi manifestions'
-python3 ../yesc.py -i content/content_04_a -o ../sips/sips_out/ -e -sod 'multi-representation' -p 5830d793-e6cd-48b0-b9bc-2508a90ada31 -r -s DIGIPRES_CLOSED
+python3 ../yesc.py -i content/content_04_a -o ../sips/sips_out/ -e -sod 'multi-representation' -p 5830d793-e6cd-48b0-b9bc-2508a90ada31 -r -iot 'Documentation_word_doc' -s DIGIPRES_CLOSED
 
 
 

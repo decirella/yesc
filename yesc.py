@@ -79,7 +79,7 @@ def create_protocol(content_path):
     
     #createdBy
     createdBy =  et.Element('createdBy')
-    createdBy.text = 'user'
+    createdBy.text = 'yesc '+ __version__
     protocol_root.append(createdBy)
     
     
