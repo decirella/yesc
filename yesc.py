@@ -1405,7 +1405,7 @@ def data_stats(data_path):
 
 def reporting_std_out(localAIPstr, file_count, data_size):
     global sip_report
-    sip_report = {'uuid' : localAIPstr, 'file_count' : file_count, 'size_bytes' :  data_size}
+    sip_report = {'protocol_ref' : localAIPstr, 'filecount' : file_count, 'size_bytes' :  data_size}
     for k, v in sip_report.items():
         print(k, v)
  
@@ -1493,7 +1493,7 @@ if __name__ == "__main__":
     # TODO
         # CO - embed metadata xml file as metadata element
         
-'''     
+    
     try:
         args = parser.parse_args()
         main(args)
@@ -1505,4 +1505,4 @@ if __name__ == "__main__":
 # debug
 args = parser.parse_args()
 main(args)
-
+''' 
