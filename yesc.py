@@ -291,6 +291,13 @@ def create_xip(args):
                     meta_entity = iobj_uuid
                     md_embed_iobj = embed_metadata(args.iometadata, meta_entity)
                     xip_root.append(md_embed_iobj)
+                
+                ### storage
+                ## check for embedding metadata at IO level
+                if args.storage:
+                    md_str_entity = iobj_uuid
+                    md_str_embed_iobj = embed_metadata(args.storage, md_str_entity)
+                    xip_root.append(md_str_embed_iobj)
                     
                        # check of creting identifier at so level
                 if args.ioidtype:
@@ -886,6 +893,11 @@ def create_xip(args):
     xip_root = et.Element('XIP')
     #et.register_namespace('XIP','http://preservica.com/XIP/v6.2')
     xip_root.attrib = {'xmlns':"http://preservica.com/XIP/v6.2"}
+    
+    
+    ### storage config
+    
+    
           
     ## main branching for different package types
     if args.assetonly:
@@ -1122,7 +1134,11 @@ def create_xip(args):
         id_as_sobj.append(id_as_sobj_ent)
         
                    
-
+    #if args.storage:
+        # check
+    
+    #if args.storageconfig:
+        # parse storageconfig
     
     Path(sips_out_path + localAIPstr).mkdir()
     xip_out_path = sips_out_path + localAIPstr + '/metadata.xml'  
@@ -1480,6 +1496,11 @@ if __name__ == "__main__":
 
     parser.add_argument("-representations", "-manifestations", "-r", "--representations", action='store_true', help='Structure should follow the multiple manifestation package definition with manifestation folders of the form *preservica_(presentation| preservation, use with -iot options to set IO title')
     parser.add_argument("-sipconfig", "-sc", "--sipconfig", help='Location of sip config, use with -r representations option')
+    
+    ## storage KW
+    parser.add_argument("-storage", "-sk", "--storage",  help='path to storage keyword doc')
+    parser.add_argument("-storageconfig", "-skc", "--storageconfig", help='Location of storage config')
+    
 
     parser.add_argument("-md5", "--md5", action='store_true', help='fixity values will  be generated using the MD5 algorithm')
     parser.add_argument("-sha1", "--sha1", action='store_true', help='fixity values will be generated using the SHA1 algorithm')
