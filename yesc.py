@@ -26,6 +26,7 @@ from pathlib import Path
 localAIPstr = ''
 sips_out_path = ''
 sip_report = {}
+package_parts = ''
 
 ## user set defaults
 default_security_tag = 'open'
@@ -298,6 +299,25 @@ def create_xip(args):
                     md_str_entity = iobj_uuid
                     md_str_embed_iobj = embed_metadata(args.storage, md_str_entity)
                     xip_root.append(md_str_embed_iobj)
+                elif args.storageconfig:
+                    # get package reps entry match with SO name
+                    print("+++++++++++++++++++++++++++++++++++++++")
+                    print(Path(file_to_pack).parent.name)
+                    print(str(Path(file_to_pack.parent)))
+                    for k,v in package_parts.items():
+                        print(k)
+                        if str(Path(file_to_pack.parent)) == k:
+                            md_strcnf_embed_iobj = v
+                            md_str_entity = iobj_uuid
+                            md_str_embed_iobj = embed_metadata(md_strcnf_embed_iobj, md_str_entity)
+                            print(md_strcnf_embed_iobj, md_str_entity)
+                            xip_root.append(md_str_embed_iobj)
+                        else:
+                            pass
+                        #print(k,v)
+                
+                    
+                    
                     
                        # check of creting identifier at so level
                 if args.ioidtype:
@@ -896,8 +916,10 @@ def create_xip(args):
     
     
     ### storage config
-    
-    
+    if args.storageconfig:
+        global package_parts
+        package_parts = parse_storageconfig(args.storageconfig, args.input)
+        
           
     ## main branching for different package types
     if args.assetonly:
@@ -1227,7 +1249,43 @@ def parse_sipconfig(sipconfig_path, package_root_path):
                     package_reps[package_reps_name] = (str(package_item), 'Access', package_reps_name)
     return package_reps
     
+### TODO refactor with sipcofig
+def parse_storageconfig(s_config_path, package_root_path):
+    # validate storageconfig file Path(__file__).with_name('file.txt')
+    #print(str(Path(__file__)) + '/assets/SipConfig.xsd')
+    #sipconfig_schema = (str(Path(__file__).parent) + '/assets/SipConfig.xsd')
+    # TODO storage config xml
+    '''
+    if validate_xml(sipconfig_path, sipconfig_schema):
+        print('true: ', sipconfig_path)
+    else:
+        print('SipConfig file is invalid, program exiting')
+        exit
+    '''
+    # read sipconfig
+    # read in xml
+    s_config_in = et.parse(s_config_path)
+    s_config_in_root = s_config_in.getroot()
     
+    #for elem in sipconfig_in_root:
+
+    sc_ns = {'' : 'http://edu.yale/library/metadata/storageconfig/v1'}
+    package_part = {}
+    
+    ## read storageconfig, return folder name and storage keyword xml   
+    
+    for elem in s_config_in_root.findall('FolderConfig', sc_ns):
+        for childelem in elem:
+            if 'FolderPrefix' in childelem.tag:
+                # original functionality for using name from sipconfig
+                #package_reps_name = childelem.text
+                package_item = package_root_path + childelem.text
+                print('package_store', package_item)
+            elif 'StorageKeyword' in childelem.tag:
+                print(childelem.text)
+                package_part[package_item] = (childelem.text)
+    return package_part
+
 
 
 def get_checksum(bs_file, args):
