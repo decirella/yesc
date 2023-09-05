@@ -125,7 +125,11 @@ def create_xip(args):
 
         iobj_parent_set = sobj_uuid
         
-        ## file include WIP
+        ## file include WIP 
+        ## mult-id - pass lists TODO
+        
+        
+        
         for file_to_pack in Path(content_path).iterdir():
             if Path(file_to_pack).is_file() and include_files(Path(file_to_pack).name, args.excludedFileNames):
         
