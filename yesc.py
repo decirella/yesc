@@ -949,9 +949,52 @@ def create_xip(args):
             package_reps = parse_sipconfig(args.sipconfig, args.input)
             mult_reps_pack(package_reps)
         else:
-            iobj_parent_set = args.parent
-            package_reps = check_multi_rep(args.input)
-            mult_reps_pack(package_reps)
+            # test to add aspace syncing from belwo else
+            if args.aspace:
+                # <StructuralObject>
+                # move to outside of recursive funct
+                sobj =  et.Element('StructuralObject')
+                xip_root.append(sobj)
+                    
+                # ref
+                sobj_ref =  et.Element('Ref')
+                sobj_uuid = str(uuid.uuid4())
+                sobj_ref.text = sobj_uuid
+                sobj.append(sobj_ref)
+                    
+                # title
+                sobj_title =  et.Element('Title')
+                sobj_title.text = args.sotitle or str(Path(content_path).parts[-1])
+                # add prefix to parent SO only
+                if args.prefix:
+                    sobj_title.text = args.prefix + ' ' + sobj_title.text
+                print(sobj_title.text)
+                sobj.append(sobj_title)
+                
+                
+                # description
+                sobj_desc =  et.Element('Description')
+                sobj_desc.text = args.sodescription
+                sobj.append(sobj_desc)
+                    
+                # security
+                sobj_sec =  et.Element('SecurityTag')
+                sobj_sec.text = args.securitytag
+                sobj.append(sobj_sec)
+                
+                if args.parent != None:    
+                    # Parent
+                    sobj_par =  et.Element('Parent')
+                    sobj_par.text = args.parent
+                    sobj.append(sobj_par)
+                
+                iobj_parent_set = sobj_uuid
+                package_reps = check_multi_rep(args.input)
+                mult_reps_pack(package_reps)
+            else:
+                iobj_parent_set = args.parent
+                package_reps = check_multi_rep(args.input)
+                mult_reps_pack(package_reps)
             
     else:
         # <StructuralObject>
@@ -1053,6 +1096,9 @@ def create_xip(args):
         
         # change out SO parent ref
         sobj_par.text = as_sobj_uuid
+        
+        # if sobj par - from SO package
+        # else creat sobjpar
         
         #print("executed to here2")
         
@@ -1572,7 +1618,7 @@ if __name__ == "__main__":
     # TODO
         # CO - embed metadata xml file as metadata element
         
-    
+
     try:
         args = parser.parse_args()
         main(args)
@@ -1584,4 +1630,4 @@ if __name__ == "__main__":
 # debug
 args = parser.parse_args()
 main(args)
-''' 
+'''
