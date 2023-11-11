@@ -918,8 +918,11 @@ def create_xip(args):
     ### storage config
     if args.storageconfig:
         global package_parts
-        package_parts = parse_storageconfig(args.storageconfig, args.input)
+        #package_parts = parse_storageconfig(args.storageconfig, args.input)
+        print(content_path)
         
+        package_parts = parse_storageconfig(args.storageconfig, content_path)
+
           
     ## main branching for different package types
     if args.assetonly:
