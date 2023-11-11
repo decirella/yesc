@@ -1582,7 +1582,7 @@ if __name__ == "__main__":
     parser.add_argument("-parent", "-p", "--parent", default='None', help='Parent or destination reference')
     parser.add_argument("-securitytag", "-s", "--securitytag", default=default_security_tag, help='Security tag for objects in sip')
     parser.add_argument("-assetonly", "-a", "--assetonly", action='store_true', help='Ingest files as assets (no folder) each file will be an asset, -parent uuid required')
-    parser.add_argument("-singleasset", "-sa", "--singleasset", action='store_true', help='Ingest multiple files as single asset, -parent uuid required')
+    parser.add_argument("-singleasset", "-sa", "--singleasset", action='store_true', help='Ingest multiple files as single asset, -IO title required, -parent uuid required')
     parser.add_argument("-iotitle", "-iot", "--iotitle", default=0, help='Title for IO, Applies in asset only mode')
     parser.add_argument("-export", "-e", "--export", action='store_true', help='Export files to content subdirectory of sip')
     parser.add_argument("-aspace", "-ao", "--aspace", help='ArchivesSpace archival object reference: archival_object_5555555')
@@ -1618,7 +1618,7 @@ if __name__ == "__main__":
     # TODO
         # CO - embed metadata xml file as metadata element
         
-
+'''
     try:
         args = parser.parse_args()
         main(args)
@@ -1630,4 +1630,4 @@ if __name__ == "__main__":
 # debug
 args = parser.parse_args()
 main(args)
-'''
+
