@@ -7,7 +7,7 @@ Create .protocol file for Presrevica ingest
 # python3 yesc.py -input ./sips/test_file/ -o ./sips/ 
 
 __author__ = "David Cirella"
-__version__ = "0.1-alpha"
+__version__ = "1.0.1-alpha"
 __license__ = ""
 
 import os
@@ -35,9 +35,11 @@ default_security_tag = 'open'
 
 def create_protocol(content_path):
     global localAIPstr
-    file_count, data_size = data_stats(content_path)
-
     
+    # get stats for input directory contents
+    file_count, data_size = data_stats(content_path)
+    
+    # create elements for .protocol file type
     protocol_root = et.Element('protocol')
     protocol_root.attrib = {'xmlns':"http://www.tessella.com/xipcreateprotocol/v1"}
     
@@ -66,7 +68,6 @@ def create_protocol(content_path):
     catalogueName.text = str(Path(content_path).parts[-1])
     protocol_root.append(catalogueName)
     
-    
     #localAIP
     localAIP =  et.Element('localAIP')
     localAIPstr = str(uuid.uuid4())
@@ -83,13 +84,17 @@ def create_protocol(content_path):
     createdBy.text = 'yesc '+ __version__
     protocol_root.append(createdBy)
     
-    
+    # create UUID.protocol named file for SIP
     write_out(protocol_root, sips_out_path + localAIPstr + '.protocol') 
+    # send protocol UUID, data stats for reporting function
     reporting_std_out(localAIPstr, file_count, data_size)
+    
+    return localAIPstr
     
 def create_xip(args):
     ###    
     def create_xip_recurse(content_path, parent_set):
+        # create sub-SO or parent_set
         sobj =  et.Element('StructuralObject')
         xip_root.append(sobj)
         
@@ -125,7 +130,7 @@ def create_xip(args):
 
         iobj_parent_set = sobj_uuid
         
-        ## file include WIP
+        ## create IOs for all files in dir of SO above
         for file_to_pack in Path(content_path).iterdir():
             if Path(file_to_pack).is_file() and include_files(Path(file_to_pack).name, args.excludedFileNames):
         
@@ -325,10 +330,12 @@ def create_xip(args):
                     id_iobj = gen_id(args, id_entity, 'io')
                     xip_root.append(id_iobj)
             elif Path(file_to_pack).is_dir():
+                # when sub-dir found, recursive call to create sub-SO
                 create_xip_recurse(file_to_pack, iobj_parent_set)
 
         
     def file_dir_pack_std():
+        # create IOs for each file following  root/parent SO creation
         for file_to_pack in Path(content_path).iterdir(): 
             if Path(file_to_pack).is_file() and include_files(Path(file_to_pack).name, args.excludedFileNames):
                 # call function for IO packing
@@ -511,6 +518,7 @@ def create_xip(args):
                     xip_root.append(id_iobj)
                     
             elif Path(file_to_pack).is_dir():
+                # if sub dirs found, call function to create new sub-SO
                 create_xip_recurse(file_to_pack, iobj_parent_set)
                 
     def file_mult_single_asset_pack():
@@ -920,7 +928,6 @@ def create_xip(args):
         global package_parts
         #package_parts = parse_storageconfig(args.storageconfig, args.input)
         print(content_path)
-        
         package_parts = parse_storageconfig(args.storageconfig, content_path)
 
           
@@ -998,8 +1005,9 @@ def create_xip(args):
                 iobj_parent_set = args.parent
                 package_reps = check_multi_rep(args.input)
                 mult_reps_pack(package_reps)
-            
+    # standard package type - folder (SO) of files (IO)        
     else:
+        # Creates root/parent SO for Standard type packages
         # <StructuralObject>
         # move to outside of recursive funct
         sobj =  et.Element('StructuralObject')
@@ -1561,15 +1569,17 @@ def include_files(file_name, list_to_exclude):
 
 def main(args):
     global sips_out_path 
-    """ Main entry point of the app """
+
     sips_out_path = os.path.join(args.output, '')
-    
     data_in_path = os.path.join(args.input, '')
     
+    # create .protocol file from input directory 
     create_protocol(data_in_path)
+    
+    # create sip with all args
     create_xip(args)
     
-    # add opt for sending return for bulk packager
+    # return dict built in reporting_std_out() for use by bulk packager
     return sip_report
 
 if __name__ == "__main__":
@@ -1577,8 +1587,7 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
 
-
-    # Optional argument flag 
+    # Optional argument flags 
     parser.add_argument("-input", "-i", "--input", help='Directory containing content files')
     parser.add_argument("-output", "-o", "--output", help='Directory to export the SIP to')
     parser.add_argument("-sotitle", "-sot", "--sotitle", default=0, help='Title for structural object')
@@ -1620,7 +1629,8 @@ if __name__ == "__main__":
     
     # TODO
         # CO - embed metadata xml file as metadata element
-        
+
+# show help/docs if run without required args, commentout for debugging        
 '''
     try:
         args = parser.parse_args()
@@ -1630,7 +1640,7 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(0)
 '''
-# debug
+# debug - commentout above and uncomment below
 args = parser.parse_args()
 main(args)
 
