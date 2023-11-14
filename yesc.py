@@ -511,6 +511,17 @@ def create_xip(args):
                     md_embed_iobj = embed_metadata(args.iometadata, meta_entity)
                     xip_root.append(md_embed_iobj)
                     
+                    
+                    ### storage
+                ## check for embedding metadata at IO level
+                if args.storage:
+                    md_str_entity = iobj_uuid
+                    md_str_embed_iobj = embed_metadata(args.storage, md_str_entity)
+                    xip_root.append(md_str_embed_iobj)
+                elif args.storageconfig:
+                    # storageconfig not used for single folder standard packages
+                    print('ERROR - storageconfig cannot be used with this package type')
+                    
                        # check of creting identifier at so level
                 if args.ioidtype:
                     id_entity = iobj_uuid
