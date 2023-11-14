@@ -921,16 +921,41 @@ def create_xip(args):
                     
                     
                             ## check for embedding metadata at IO level
-        if args.iometadata:
-            meta_entity = iobj_uuid
-            md_embed_iobj = embed_metadata(args.iometadata, meta_entity)
-            xip_root.append(md_embed_iobj)
-            
-               # check of creting identifier at so level
-        if args.ioidtype:
-            id_entity = iobj_uuid
-            id_iobj = gen_id(args, id_entity, 'io')
-            xip_root.append(id_iobj)
+            if args.iometadata:
+                meta_entity = iobj_uuid
+                md_embed_iobj = embed_metadata(args.iometadata, meta_entity)
+                xip_root.append(md_embed_iobj)
+                
+            ### storage
+            ## check for embedding metadata at IO level
+            if args.storage:
+                md_str_entity = iobj_uuid
+                md_str_embed_iobj = embed_metadata(args.storage, md_str_entity)
+                xip_root.append(md_str_embed_iobj)
+            elif args.storageconfig:
+                print('ERROR - use sk to set kw and manage representation storage in Preservica instance settings')
+                '''
+                # get package reps entry match with SO name
+                print("+++++++++++++++++++++++++++++++++++++++")
+                print(Path(file_to_pack).parent.name)
+                print(str(Path(file_to_pack.parent)))
+                for k,v in package_parts.items():
+                    print(k)
+                    if str(Path(file_to_pack.parent)) == k:
+                        md_strcnf_embed_iobj = v
+                        md_str_entity = iobj_uuid
+                        md_str_embed_iobj = embed_metadata(md_strcnf_embed_iobj, md_str_entity)
+                        print(md_strcnf_embed_iobj, md_str_entity)
+                        xip_root.append(md_str_embed_iobj)
+                    else:
+                        pass
+                    #print(k,v)
+                '''
+                   # check of creting identifier at so level
+            if args.ioidtype:
+                id_entity = iobj_uuid
+                id_iobj = gen_id(args, id_entity, 'io')
+                xip_root.append(id_iobj)
                     
                     
     
