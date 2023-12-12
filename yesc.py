@@ -245,7 +245,7 @@ def create_xip(args):
                 
                 #bitstream
                 gen_bs = et.Element('Bitstream')
-                gen_bs.text = Path(file_to_pack).name
+                gen_bs.text = Path(file_to_pack).parts[-2] + '/' + Path(file_to_pack).part
                 gen_bss.append(gen_bs)
         
                 ##
@@ -266,7 +266,7 @@ def create_xip(args):
                 
                 #physicallocation
                 bs_pl =  et.Element('PhysicalLocation')
-                #bs_pl.text = Path(file_to_pack).name
+                bs_pl.text = Path(file_to_pack).parts[-2]
                 bit_stream.append(bs_pl)
                 
                 #fixities
@@ -452,7 +452,7 @@ def create_xip(args):
                 
                 #bitstream
                 gen_bs = et.Element('Bitstream')
-                gen_bs.text = Path(file_to_pack).name
+                gen_bs.text = Path(file_to_pack).parts[-2] + '/' + Path(file_to_pack).parts[-1]
                 gen_bss.append(gen_bs)
 
                 ##
@@ -473,7 +473,7 @@ def create_xip(args):
                 
                 #physicallocation
                 bs_pl =  et.Element('PhysicalLocation')
-                #bs_pl.text = Path(file_to_pack).name
+                bs_pl.text = Path(file_to_pack).parts[-2]
                 bit_stream.append(bs_pl)
                 
                 #fixities
@@ -1274,7 +1274,11 @@ def create_xip(args):
         Path(sip_content).mkdir()
         for file_to_pack in Path(content_path).rglob("*"): 
             if Path(file_to_pack).is_file() and include_files(Path(file_to_pack).name, args.excludedFileNames):
-                shutil.copy2(file_to_pack, sip_content)
+                sip_content_parent = sip_content + '/' + Path(file_to_pack).parts[-2] 
+                Path(sip_content_parent).mkdir(exist_ok=True)
+                print(sip_content_parent)
+                print(file_to_pack)
+                shutil.copy2(file_to_pack, sip_content_parent)
                 
         
           
