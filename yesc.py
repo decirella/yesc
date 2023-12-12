@@ -1148,15 +1148,15 @@ def create_xip(args):
         as_sobj_sec.text = args.securitytag
         as_sobj.append(as_sobj_sec)
         
-        #print("executed to here")
+        # 20231113 fix for other package types
+        if args.singleasset:
+            iobj_par.text = as_sobj_uuid
+        else:     
+            # standard packages - change out SO parent ref
+            sobj_par.text = as_sobj_uuid
         
-        # change out SO parent ref
-        sobj_par.text = as_sobj_uuid
+
         
-        # if sobj par - from SO package
-        # else creat sobjpar
-        
-        #print("executed to here2")
         
         # identifier gp as_sobj
         id_as_gp_sobj =  et.Element('Identifier')
