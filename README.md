@@ -21,8 +21,10 @@ usage: yesc.py [-h] [-input INPUT] [-output OUTPUT] [-sotitle SOTITLE]
                [-sometadata SOMETADATA] [-iometadata IOMETADATA]
                [-ioidtype IOIDTYPE] [-ioidvalue IOIDVALUE]
                [-soidtype SOIDTYPE] [-soidvalue SOIDVALUE] [-representations]
-               [-sipconfig SIPCONFIG] [-md5] [-sha1] [-sha256] [-sha512]
-               [-excludedFileNames EXCLUDEDFILENAMES]
+               [-sipconfig SIPCONFIG] [-storage STORAGE]
+               [-storageconfig STORAGECONFIG] [-md5] [-sha1] [-sha256]
+               [-sha512] [-excludedFileNames EXCLUDEDFILENAMES]
+               [-prefix PREFIX]
 
 options:
   -h, --help            show this help message and exit
@@ -40,10 +42,10 @@ options:
                         Ingest files as assets (no folder) each file will be
                         an asset, -parent uuid required
   -singleasset, -sa, --singleasset
-                        Ingest multiple files as single asset, -parent uuid
-                        required
+                        Ingest multiple files as single asset, -IO title
+                        required, -parent uuid required
   -iotitle IOTITLE, -iot IOTITLE, --iotitle IOTITLE
-                        Title for IO, Asset
+                        Title for IO, Applies in asset only mode
   -export, -e, --export
                         Export files to content subdirectory of sip
   -aspace ASPACE, -ao ASPACE, --aspace ASPACE
@@ -52,7 +54,8 @@ options:
   -sodescription SODESCRIPTION, -sod SODESCRIPTION, --sodescription SODESCRIPTION
                         Description field for Structural Objects
   -iodescription IODESCRIPTION, -iod IODESCRIPTION, --iodescription IODESCRIPTION
-                        Description field for all Information Objects
+                        Description field for all Information Objects, Applies
+                        in asset only mode
   -sometadata SOMETADATA, -som SOMETADATA, --sometadata SOMETADATA
                         Embed content of XML file as metadata linked to SO
   -iometadata IOMETADATA, -iom IOMETADATA, --iometadata IOMETADATA
@@ -68,9 +71,15 @@ options:
   -representations, -manifestations, -r, --representations
                         Structure should follow the multiple manifestation
                         package definition with manifestation folders of the
-                        form *preservica_(presentation| preservation
+                        form *preservica_(presentation| preservation, use with
+                        -iot options to set IO title
   -sipconfig SIPCONFIG, -sc SIPCONFIG, --sipconfig SIPCONFIG
-                        Location of sip config
+                        Location of sip config, use with -r representations
+                        option
+  -storage STORAGE, -sk STORAGE, --storage STORAGE
+                        path to storage keyword doc
+  -storageconfig STORAGECONFIG, -skc STORAGECONFIG, --storageconfig STORAGECONFIG
+                        Location of storage config
   -md5, --md5           fixity values will be generated using the MD5
                         algorithm
   -sha1, --sha1         fixity values will be generated using the SHA1
@@ -82,6 +91,8 @@ options:
   -excludedFileNames EXCLUDEDFILENAMES, -ef EXCLUDEDFILENAMES, --excludedFileNames EXCLUDEDFILENAMES
                         Comma separated list of file names to exclude during
                         SIP creation
+  -prefix PREFIX, -pf PREFIX, --prefix PREFIX
+                        String to prefix SO title with
 
 
 
