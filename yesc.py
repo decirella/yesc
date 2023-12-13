@@ -245,7 +245,7 @@ def create_xip(args):
                 
                 #bitstream
                 gen_bs = et.Element('Bitstream')
-                gen_bs.text = Path(file_to_pack).parts[-2] + '/' + Path(file_to_pack).part
+                gen_bs.text = Path(file_to_pack).parts[-2] + '/' + Path(file_to_pack).parts[-1]
                 gen_bss.append(gen_bs)
         
                 ##
@@ -651,7 +651,7 @@ def create_xip(args):
                 
                 #bitstream
                 gen_bs = et.Element('Bitstream')
-                gen_bs.text = Path(file_to_pack).name
+                gen_bs.text = Path(file_to_pack).parts[-2] + '/' + Path(file_to_pack).parts[-1]
                 gen_bss.append(gen_bs)
 
                 ##
@@ -672,7 +672,7 @@ def create_xip(args):
                 
                 #physicallocation
                 bs_pl =  et.Element('PhysicalLocation')
-                #bs_pl.text = Path(file_to_pack).name
+                bs_pl.text = Path(file_to_pack).parts[-2]
                 bit_stream.append(bs_pl)
                 
                 #fixities
@@ -861,7 +861,7 @@ def create_xip(args):
                     
                     #bitstream
                     gen_bs = et.Element('Bitstream')
-                    gen_bs.text = Path(file_to_pack).name
+                    gen_bs.text = Path(file_to_pack).parts[-2] + '/' + Path(file_to_pack).parts[-1]
                     gen_bss.append(gen_bs)
 
                     ##
@@ -882,7 +882,7 @@ def create_xip(args):
                     
                     #physicallocation
                     bs_pl =  et.Element('PhysicalLocation')
-                    #bs_pl.text = Path(file_to_pack).name
+                    bs_pl.text = Path(file_to_pack).parts[-2]
                     bit_stream.append(bs_pl)
                     
                     #fixities
