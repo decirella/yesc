@@ -1589,30 +1589,15 @@ def reporting_std_out(localAIPstr, file_count, data_size):
     for k, v in sip_report.items():
         print(k, v)
  
-# parse list of files to exclude, return true if keep, false if exclude 
+# parse list of files/patterns to exclude, return true if keep, false if exclude
+# supports fnmatch patterns (*, ?, [seq]) in addition to exact filenames
 def include_files(file_name, list_to_exclude):
-    # print(file_name)
-    # if no ef set, this will eval false for empty)
-    if list_to_exclude: 
-        print('check files')
-        #print(list_to_exclude)
-        # split string to list at commams
-        exclude_files = list_to_exclude.split(",")
-
-        #check for match from list to current file
-        if file_name in list_to_exclude:
-            # false to fail file
-            print('excluding : ', file_name)
-            return False
-        else:
-            # true ot include file
-            print('no match : ', file_name)
-            return True
-    else:
-        # true to include file
-        # print(list_to_exclude)
-        # print('none to check')
-        return True
+    if list_to_exclude:
+        import fnmatch
+        for pattern in list_to_exclude.split(","):
+            if fnmatch.fnmatch(file_name, pattern.strip()):
+                return False
+    return True
     
 
 
@@ -1672,7 +1657,7 @@ if __name__ == "__main__":
     parser.add_argument("-sha256", "--sha256", action='store_true', help='fixity values will be generated using the SHA256 algorithm')
     parser.add_argument("-sha512", "--sha512", action='store_true', help='fixity values will be generated using the SHA512 algorithm')
     
-    parser.add_argument("-excludedFileNames", "-ef", "--excludedFileNames", default='', help='Comma separated list of file names to  exclude during SIP creation')
+    parser.add_argument("-excludedFileNames", "-ef", "--excludedFileNames", default='', help='Comma separated list of file names or patterns to exclude during SIP creation (supports wildcards: *, ?, [seq])')
     
     parser.add_argument("-prefix", "-pf", "--prefix", default='', help='String to prefix SO title with')
     
@@ -1690,6 +1675,7 @@ if __name__ == "__main__":
         sys.exit(0)
 '''
 # debug - commentout above and uncomment below
-args = parser.parse_args()
-main(args)
+if __name__ == "__main__":
+    args = parser.parse_args()
+    main(args)
 
