@@ -33,11 +33,11 @@ default_security_tag = 'open'
 
 
 
-def create_protocol(content_path):
+def create_protocol(content_path, list_to_exclude=None):
     global localAIPstr
     
-    # get stats for input directory contents
-    file_count, data_size = data_stats(content_path)
+    # get stats for the SIP contents, excluding files the packer will skip
+    file_count, data_size = data_stats(content_path, list_to_exclude)
     
     # create elements for .protocol file type
     protocol_root = et.Element('protocol')
@@ -1569,9 +1569,11 @@ def validate_xml(xml_path: str, xsd_path: str) -> bool:
     return xml_status
 
     
-def data_stats(data_path):
+def data_stats(data_path, list_to_exclude=None):
     
-    file_list = [name for name in Path(data_path).rglob("*") if Path(name).is_file()]
+    # only count files that will actually be packed into the SIP
+    file_list = [name for name in Path(data_path).rglob("*")
+                 if Path(name).is_file() and include_files(Path(name).name, list_to_exclude)]
     file_count = len(file_list)
     
     data_size = 0
@@ -1623,7 +1625,8 @@ def main(args):
     data_in_path = os.path.join(args.input, '')
     
     # create .protocol file from input directory 
-    create_protocol(data_in_path)
+    # getattr: programmatic callers may build args without this field
+    create_protocol(data_in_path, getattr(args, 'excludedFileNames', None))
     
     # create sip with all args
     create_xip(args)
